@@ -1,0 +1,79 @@
+# ================================
+#  GENERAL
+# ================================
+node_modules/
+**/node_modules/
+dist/
+build/
+out/
+coverage/
+uploads/
+tmp/
+temp/
+.cache/
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# ================================
+#  LOG FILES
+# ================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ================================
+#  FRONTEND (React/Vite/Next)
+# ================================
+*.tsbuildinfo
+.vite/
+.svelte-kit/
+.next/
+.nuxt/
+.storybook/
+*.lock
+*.env.local
+*.vercel
+.vercel/
+firebase-debug.log
+firebase-debug.*
+
+# ================================
+#  BACKEND (Node / Express)
+# ================================
+uploads/
+public/uploads/
+public/images/
+*.pid
+*.seed
+*.tgz
+*.bak
+*.tmp
+
+# ================================
+#  EDITORS / OS FILES
+# ================================
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ================================
+#  MISC
+# ================================
+# Ignore generated docs or artifacts
+docs_build/
+report/
+*.iml
+*.orig
