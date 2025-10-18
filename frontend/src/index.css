@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #31AA4F;
+  --color-secondary: #FFFBEE;
+  --breakpoint-xs: 360px;
+  --breakpoint-xss: 320px;
+   --breakpoint-mds: 760px;
+}
+@layer base {
+  body {
+    @apply bg-[#FFFBEE];
+  }
+}
