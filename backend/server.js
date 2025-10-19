@@ -1,37 +1,7 @@
-// const express = require("express");
-// const cors = require("cors");
-// const connectDB = require("./connection");
-// const userRouter = require("./routes/userRoutes");
-// const itemRouter = require("./routes/itemRoutes");
-// const cookieParser = require('cookie-parser')
-
-// const app = express();
-// const PORT = 3001;
-
-// // Middleware
-// app.use(express.json());
-// app.use(cors());
-// app.use(cookieParser());
-// app.use("/images", express.static("public/images"));
-
-// // MongoDB connection
-// connectDB();
-
-// // Routes
-// app.use("/api/users", userRouter);
-// app.use("/api/items", itemRouter);
-
-// // Server start
-// app.listen(PORT, () => {
-//   console.log(`Server is running at http://localhost:${PORT}`);
-// });
-
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./connection");
 const userRouter = require("./routes/userRoutes");
-const itemRouter = require("./routes/itemRoutes");
-// const benefRouter = require("./routes/benefRoutes");
 const cookieParser = require("cookie-parser");
 const { GoogleGenAI } = require("@google/genai");
 const multer = require("multer");
@@ -59,8 +29,6 @@ connectDB();
 
 // Routes
 app.use("/api/users", userRouter);
-app.use("/api/items", itemRouter);
-// app.use("/api/beneficiaries", benefRouter);
 
 // Helper function to extract text from PDF
 async function extractTextFromPDF(filePath) {
@@ -97,8 +65,8 @@ async function extractTextFromPDF(filePath) {
   });
 }
 
-// 🧠 Gemini test (chat) route
-app.post("/api/gemini", async (req, res) => {
+//  HealthMate Gemini route
+app.post("/api/healthmate", async (req, res) => {
   try {
     const userPrompt = req.body.prompt || "Hello from HealthMate AI Assistant!";
 

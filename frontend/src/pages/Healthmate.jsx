@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Loader2, Upload, FileText, AlertCircle } from "lucide-react";
-import Logo from "../../assets/logo2.png";
-import { useAuth } from "../../context/authContext";
+import Logo from "../assets/logo2.png";
+import { useAuth } from "../context/authContext";
 import axios from "axios";
 import "./styles.css";
 
-const GeminiTester = () => {
+const Healthmate = () => {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [file, setFile] = useState(null);
@@ -65,7 +65,7 @@ const GeminiTester = () => {
     setPrompt("");
 
     try {
-      const res = await fetch("http://localhost:3001/api/gemini", {
+      const res = await fetch("http://localhost:3001/api/healthmate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: currentPrompt }),
@@ -279,4 +279,4 @@ const GeminiTester = () => {
   );
 };
 
-export default GeminiTester;
+export default Healthmate;

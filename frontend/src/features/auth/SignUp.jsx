@@ -1,11 +1,14 @@
-import EyeIcon from "../../components/ui/EyeIcon";
-import Button from "../../components/Ui/Button";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Button from "../../components/Ui/Button";
+import EyeIcon from "../../components/ui/EyeIcon";
 import axios from "axios";
+import { useAuth } from "../../context/authContext";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import Logo from "../../assets/logo2.png";
+import "./styles.css";
 
 const schema = yup.object().shape({
   fullName: yup.string().required("Name is required"),
@@ -26,12 +29,32 @@ const schema = yup.object().shape({
 function Signup() {
   const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const [user, setUser] = useState(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const token = localStorage.getItem("pos-token");
+        if (!token) return;
+
+        const response = await axios.get("http://localhost:3001/api/users/current", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(response.data);
+      } catch (err) {
+        console.error("Failed to fetch user:", err.response?.data || err.message);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const submitHandler = async (data) => {
     const { fullName, email, password, image } = data;
@@ -67,109 +90,118 @@ function Signup() {
       );
 
       alert("Successfully Registered");
-
-      // Send email
-      try {
-        const response = await axios.post(
-          "http://localhost:3001/api/users/send-email",
-          { name: fullName, email }
-        );
-        console.log("Email sent:", response.data);
-      } catch (err) {
-        console.warn("Email not sent:", err);
-      }
       navigate("/login");
     } catch (err) {
-      console.error("Registration error:", err.message);
+      console.error("Registration error:", err.response?.data || err.message);
       alert("Registration failed");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFBEE] flex justify-center items-center px-4">
-      <form
-        onSubmit={handleSubmit(submitHandler)}
-        className="w-full max-w-sm bg-white p-8 rounded-2xl shadow-md border border-gray-200 space-y-6"
-      >
-        <h2 className="text-2xl font-bold text-primary text-center">
-          Hackathon Registration
-        </h2>
-
-        {/* Name */}
-        <div>
-          <label className="block text-gray-800 font-medium mb-1">Name</label>
-          <input
-            {...register("fullName")}
-            type="text"
-            placeholder="Ali"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
-          />
-          <p className="text-red-500 text-sm">{errors.fullName?.message}</p>
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-gray-800 font-medium mb-1">Email</label>
-          <input
-            {...register("email")}
-            type="email"
-            placeholder="ali@gmail.com"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
-          />
-          <p className="text-red-500 text-sm">{errors.email?.message}</p>
-        </div>
-
-        {/* Password */}
-        <div>
-          <label className="block text-gray-800 font-medium mb-1">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              {...register("password")}
-              type={showPass ? "text" : "password"}
-              placeholder="••••••••"
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
-            />
-            <EyeIcon
-              visible={showPass}
-              toggle={() => setShowPass((prev) => !prev)}
-            />
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col font-sans">
+      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
+        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={Logo} alt="HealthMate Logo" className="w-10 h-10 object-contain rounded-xl shadow-md" />
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900">HealthMate Assistant</h1>
+              <p className="text-xs text-gray-500">Powered by Google AI</p>
+            </div>
           </div>
-          <p className="text-red-500 text-sm">{errors.password?.message}</p>
+          {user && (
+            <div className="flex items-center gap-3">
+              <img
+                src={user.profileImage}
+                alt={`${user.name}'s Profile`}
+                className="w-10 h-10 object-cover rounded-xl shadow-md"
+              />
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Image */}
-        <div className="mb-4">
-          <label className="block text-gray-800 font-medium mb-1">
-            Profile Image
-          </label>
-          <input
-            {...register("image")}
-            type="file"
-            className="w-full border rounded p-2 bg-gray-50"
-          />
-          <p className="text-red-500 text-sm">{errors.image?.message}</p>
-        </div>
-
-        {/* Submit */}
-        <Button
-          className="w-full cursor-pointer bg-primary hover:bg-white hover:border hover:border-primary text-white hover:text-primary transition duration-200"
-          type="submit"
+      <div className="flex-1 flex justify-center items-center px-4">
+        <form
+          onSubmit={handleSubmit(submitHandler)}
+          className="w-full max-w-sm bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-6"
         >
-          Sign Up
-        </Button>
+          <h2 className="text-2xl font-bold text-gray-900 text-center">
+            HealthMate Signup
+          </h2>
 
-        <p className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-primary font-semibold hover:underline"
+          {/* Name */}
+          <div>
+            <label className="block text-gray-800 font-medium mb-1">Name</label>
+            <input
+              {...register("fullName")}
+              type="text"
+              placeholder="Ali"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <p className="text-sm text-red-500 mt-1">{errors.fullName?.message}</p>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label className="block text-gray-800 font-medium mb-1">Email</label>
+            <input
+              {...register("email")}
+              type="email"
+              placeholder="ali@gmail.com"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <p className="text-sm text-red-500 mt-1">{errors.email?.message}</p>
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-gray-800 font-medium mb-1">Password</label>
+            <div className="relative">
+              <input
+                {...register("password")}
+                type={showPass ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              />
+              <EyeIcon
+                visible={showPass}
+                toggle={() => setShowPass((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-600"
+              />
+            </div>
+            <p className="text-sm text-red-500 mt-1">{errors.password?.message}</p>
+          </div>
+
+          {/* Image */}
+          <div>
+            <label className="block text-gray-800 font-medium mb-1">Profile Image</label>
+            <input
+              {...register("image")}
+              type="file"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-green-100 file:text-green-700 file:font-medium"
+            />
+            <p className="text-sm text-red-500 mt-1">{errors.image?.message}</p>
+          </div>
+
+          {/* Submit */}
+          <Button
+            className="w-full bg-gradient-to-br from-green-500 to-green-600 text-white hover:bg-gradient-to-br hover:from-green-600 hover:to-green-700 font-medium py-3 rounded-lg transition-opacity"
+            type="submit"
           >
-            Login
-          </Link>
-        </p>
-      </form>
+            Sign Up
+          </Button>
+
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-green-500 font-semibold hover:underline"
+            >
+              Login
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
