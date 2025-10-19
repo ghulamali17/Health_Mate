@@ -13,13 +13,21 @@ const mammoth = require("mammoth");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Configure multer for memory storage (required for Vercel serverless)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://health-mate-dcv3-8hevjfkqh-ghulam-alis-projects-b7b1d0e4.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
+
+
 app.use(cookieParser());
 app.use("/images", express.static("public/images"));
 
@@ -66,7 +74,6 @@ async function extractTextFromPDFBuffer(buffer) {
       }
     });
 
-    // Use parseBuffer instead of loadPDF for serverless
     pdfParser.parseBuffer(buffer);
   });
 }
@@ -132,7 +139,7 @@ Respond now:
   }
 });
 
-// 📄 File summarization route (UPDATED for Vercel)
+// File summarization route 
 app.post("/api/summarize", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
