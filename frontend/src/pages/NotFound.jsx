@@ -4,7 +4,7 @@ import { Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
 import Logo from "../assets/logo2.png";
-import "./styles.css";
+import "./Styles";
 
 function NotFound() {
   const { user: authUser } = useAuth();
