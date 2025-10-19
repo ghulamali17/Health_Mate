@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
-import Logo from "../assets/logo2.png";
-import "./Styles.css";
+import Logo from "../assets/logo2";
+// import "./Styles.css";
 
 function NotFound() {
   const { user: authUser } = useAuth();
