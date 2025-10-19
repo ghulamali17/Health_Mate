@@ -11,8 +11,11 @@ const PDFParser = require("pdf2json");
 const mammoth = require("mammoth");
 
 const app = express();
-const PORT = 3001;
-const upload = multer({ dest: "uploads/" });
+const PORT = process.env.PORT || 3001;
+
+// Configure multer for memory storage (required for Vercel serverless)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 // Middleware
 app.use(express.json());
@@ -32,8 +35,8 @@ connectDB();
 app.use("/api/users", userRouter);
 app.use("/api/chat", chatRouter);
 
-// Helper function to extract text from PDF
-async function extractTextFromPDF(filePath) {
+// Helper function to extract text from PDF buffer (updated for Vercel)
+async function extractTextFromPDFBuffer(buffer) {
   return new Promise((resolve, reject) => {
     const pdfParser = new PDFParser();
 
@@ -63,7 +66,8 @@ async function extractTextFromPDF(filePath) {
       }
     });
 
-    pdfParser.loadPDF(filePath);
+    // Use parseBuffer instead of loadPDF for serverless
+    pdfParser.parseBuffer(buffer);
   });
 }
 
@@ -86,7 +90,7 @@ An AI-powered personal health companion that helps users understand their medica
 - Suggest 3-5 relevant questions users can ask their doctor
 - Recommend foods to eat or avoid based on their health data
 - Share simple home remedies when applicable
-- Always remind users: **"AI is for understanding only, not for medical advice. Always consult your doctor before making any decision."** (Roman Urdu: "Yeh AI sirf samajhne ke liye hai, ilaaj ke liye nahi. Koi bhi faisla lene se pehle apne doctor se zaroor mashwara karein.")
+- Always remind users: **"AI is for understanding only, not for medical advice. Always consult your doctor before making any decision."** (Roman Urdu: "Yeh AI samajhne ke liye hai, ilaaj ke liye nahi. Koi bhi faisla lene se pehle apne doctor se zaroor mashwara karein.")
 
 **Context:**
 ${reportContext ? `Recent Report Analysis: ${reportContext}` : 'No recent report context'}
@@ -128,15 +132,14 @@ Respond now:
   }
 });
 
-// 📄 File summarization route
+// 📄 File summarization route (UPDATED for Vercel)
 app.post("/api/summarize", upload.single("file"), async (req, res) => {
-  let filePath;
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
-    filePath = req.file.path;
+    const fileBuffer = req.file.buffer;
     const fileType = req.file.mimetype;
     const userPrompt = req.body?.prompt?.trim() || "Please analyze this medical report";
     const userVitals = req.body?.vitals ? JSON.parse(req.body.vitals) : null;
@@ -146,27 +149,24 @@ app.post("/api/summarize", upload.single("file"), async (req, res) => {
     console.log("Processing file:", req.file.originalname);
     console.log("File type:", fileType);
 
-    // Extract text depending on file type
+    // Extract text depending on file type (using buffers instead of file system)
     if (fileType === "application/pdf") {
-      text = await extractTextFromPDF(filePath);
+      text = await extractTextFromPDFBuffer(fileBuffer);
     } else if (
       fileType ===
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
     ) {
       const result = await mammoth.extractRawText({
-        buffer: fs.readFileSync(filePath),
+        buffer: fileBuffer,
       });
       text = result.value;
     } else if (fileType.startsWith("text/")) {
-      text = fs.readFileSync(filePath, "utf8");
+      text = fileBuffer.toString("utf8");
     } else {
-      fs.unlinkSync(filePath);
       return res
         .status(400)
         .json({ error: "Unsupported file type. Please upload PDF, DOCX, or TXT files." });
     }
-
-    fs.unlinkSync(filePath);
 
     if (!text || text.trim().length === 0) {
       return res
@@ -174,7 +174,7 @@ app.post("/api/summarize", upload.single("file"), async (req, res) => {
         .json({ error: "Could not extract text from file. The file might be empty or corrupted." });
     }
 
-    // Limit
+    // Limit text length
     const maxLength = 30000;
     if (text.length > maxLength) {
       text = text.substring(0, maxLength) + "\n\n[Text truncated due to length...]";
@@ -232,7 +232,7 @@ ${userPrompt ? `User's Specific Question: ${userPrompt}` : ''}
 
 **Always end with this disclaimer:**
 ⚠️ **Disclaimer:** AI is for understanding only, not for medical advice. Always consult your doctor before making any decision.
-(Roman Urdu: Yeh AI sirf samajhne ke liye hai, ilaaj ke liye nahi. Koi bhi faisla lene se pehle apne doctor se zaroor mashwara karein.)
+(Roman Urdu: Yeh AI samajhne ke liye hai, ilaaj ke liye nahi. Koi bhi faisla lene se pehle apne doctor se zaroor mashwara karein.)
 
 Provide your analysis now:
 `;
@@ -246,9 +246,6 @@ Provide your analysis now:
     res.json({ summary: response.text });
   } catch (error) {
     console.error("Summarization error:", error);
-    if (filePath && fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
     res.status(500).json({
       error: "Summarization failed",
       details: error.message,
@@ -256,7 +253,26 @@ Provide your analysis now:
   }
 });
 
-// Server start
-app.listen(PORT, () => {
-  console.log(`✅ Server is running at http://localhost:${PORT}`);
+// Root endpoint
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "HealthMate Backend API is running!",
+    version: "1.0.0",
+    endpoints: {
+      healthmate: "/api/healthmate",
+      summarize: "/api/summarize",
+      users: "/api/users",
+      chat: "/api/chat"
+    }
+  });
 });
+
+// Export the app for Vercel
+module.exports = app;
+
+// Start server only in local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`✅ Server is running at http://localhost:${PORT}`);
+  });
+}
