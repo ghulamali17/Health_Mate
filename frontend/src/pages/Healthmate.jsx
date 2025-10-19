@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Upload, FileText, AlertCircle } from "lucide-react";
+import { Send, Loader2, Upload, FileText, AlertCircle, History, Trash2, PlusCircle } from "lucide-react";
 import Logo from "../assets/logo2.png";
 import { useAuth } from "../context/authContext";
 import axios from "axios";
@@ -14,14 +14,26 @@ const Healthmate = () => {
   const [error, setError] = useState("");
   const [conversation, setConversation] = useState([]);
   const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [sessions, setSessions] = useState([]);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
 
   const { user: authUser } = useAuth();
 
+  // Generate session ID
+  useEffect(() => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+  }, []);
+
+  // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
+        setLoadingUser(true);
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
@@ -31,17 +43,102 @@ const Healthmate = () => {
         setUser(response.data);
       } catch (err) {
         console.error("Failed to fetch user:", err.response?.data || err.message);
+      } finally {
+        setLoadingUser(false);
       }
     };
 
     fetchCurrentUser();
   }, []);
 
+  // Load chat history on mount
+  useEffect(() => {
+    if (user && sessionId) {
+      loadChatHistory();
+    }
+  }, [user, sessionId]);
+
+  // Fetch all sessions
+  useEffect(() => {
+    if (user) {
+      fetchSessions();
+    }
+  }, [user]);
+
+  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [conversation, loading]);
+
+  const fetchSessions = async () => {
+    if (!user) return;
+    try {
+      const response = await axios.get(`http://localhost:3001/api/chat/sessions/${user._id}`);
+      setSessions(response.data.sessions || []);
+    } catch (err) {
+      console.error("Failed to fetch sessions:", err);
+    }
+  };
+
+  const loadChatHistory = async () => {
+    if (!user || !sessionId) return;
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/api/chat/history/${user._id}/${sessionId}`
+      );
+      setConversation(response.data.messages || []);
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
+    }
+  };
+
+  const saveChatMessage = async (message) => {
+    if (!user || !sessionId) return;
+    try {
+      await axios.post("http://localhost:3001/api/chat/save", {
+        userId: user._id,
+        sessionId,
+        message,
+      });
+    } catch (err) {
+      console.error("Failed to save message:", err);
+    }
+  };
+
+  const loadSession = async (selectedSessionId) => {
+    setSessionId(selectedSessionId);
+    setShowHistory(false);
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/api/chat/history/${user._id}/${selectedSessionId}`
+      );
+      setConversation(response.data.messages || []);
+    } catch (err) {
+      console.error("Failed to load session:", err);
+    }
+  };
+
+  const startNewSession = () => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+    setConversation([]);
+    setShowHistory(false);
+  };
+
+  const deleteSession = async (sessionIdToDelete) => {
+    if (!user) return;
+    try {
+      await axios.delete(`http://localhost:3001/api/chat/session/${user._id}/${sessionIdToDelete}`);
+      fetchSessions();
+      if (sessionIdToDelete === sessionId) {
+        startNewSession();
+      }
+    } catch (err) {
+      console.error("Failed to delete session:", err);
+    }
+  };
 
   const handleTextareaChange = (e) => {
     setPrompt(e.target.value);
@@ -55,8 +152,9 @@ const Healthmate = () => {
     if (e) e.preventDefault();
     if (!prompt.trim() || loading) return;
 
-    const userMessage = { type: "user", text: prompt };
+    const userMessage = { type: "user", text: prompt, timestamp: new Date() };
     setConversation((prev) => [...prev, userMessage]);
+    await saveChatMessage(userMessage);
 
     setError("");
     setResponse("");
@@ -74,11 +172,17 @@ const Healthmate = () => {
       const data = await res.json();
       const aiResponse = data.text || "No response.";
       setResponse(aiResponse);
-      setConversation((prev) => [...prev, { type: "assistant", text: aiResponse }]);
+      
+      const assistantMessage = { type: "assistant", text: aiResponse, timestamp: new Date() };
+      setConversation((prev) => [...prev, assistantMessage]);
+      await saveChatMessage(assistantMessage);
+      await fetchSessions();
     } catch (err) {
       const errorMsg = "Something went wrong. Check your backend or network.";
       setError(errorMsg);
-      setConversation((prev) => [...prev, { type: "error", text: errorMsg }]);
+      const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
+      setConversation((prev) => [...prev, errorMessage]);
+      await saveChatMessage(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -94,15 +198,20 @@ const Healthmate = () => {
     setLoading(true);
     setError("");
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    setConversation((prev) => [
-      ...prev,
-      { type: "user", text: `📄 Uploaded file: ${file.name}`, isFile: true },
-    ]);
+    const fileMessage = {
+      type: "user",
+      text: `📄 Uploaded file: ${file.name}`,
+      isFile: true,
+      fileName: file.name,
+      timestamp: new Date(),
+    };
+    setConversation((prev) => [...prev, fileMessage]);
+    await saveChatMessage(fileMessage);
 
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("http://localhost:3001/api/summarize", {
         method: "POST",
         body: formData,
@@ -111,14 +220,22 @@ const Healthmate = () => {
       const data = await res.json();
       const summaryText = data.summary || data.error;
       setSummary(summaryText);
-      setConversation((prev) => [
-        ...prev,
-        { type: "assistant", text: summaryText, isSummary: true },
-      ]);
+      
+      const summaryMessage = {
+        type: "assistant",
+        text: summaryText,
+        isSummary: true,
+        timestamp: new Date(),
+      };
+      setConversation((prev) => [...prev, summaryMessage]);
+      await saveChatMessage(summaryMessage);
+      await fetchSessions();
     } catch (err) {
       const errorMsg = "File summarization failed.";
       setError(errorMsg);
-      setConversation((prev) => [...prev, { type: "error", text: errorMsg }]);
+      const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
+      setConversation((prev) => [...prev, errorMessage]);
+      await saveChatMessage(errorMessage);
     } finally {
       setLoading(false);
       setFile(null);
@@ -136,17 +253,75 @@ const Healthmate = () => {
               <p className="text-xs text-gray-500">Powered by Google AI</p>
             </div>
           </div>
-          {user && (
-            <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Chat History"
+              disabled={loading}
+            >
+              <History className="w-5 h-5 text-gray-600" />
+            </button>
+            <button
+              onClick={startNewSession}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              title="New Chat"
+              disabled={loading}
+            >
+              <PlusCircle className="w-5 h-5 text-green-600" />
+            </button>
+            {loadingUser ? (
+              <Loader2 className="w-10 h-10 text-green-600 spin" />
+            ) : user ? (
               <img
                 src={user.profileImage}
                 alt={`${user.name}'s Profile`}
                 className="w-10 h-10 object-cover rounded-xl shadow-md"
               />
-            </div>
-          )}
+            ) : null}
+          </div>
         </div>
       </div>
+
+      {showHistory && (
+        <div className="absolute top-16 right-4 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-20 max-h-96 overflow-y-auto">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-900">Chat History</h3>
+          </div>
+          <div className="p-2">
+            {sessions.length === 0 ? (
+              <p className="text-center text-gray-500 py-4 text-sm">No chat history</p>
+            ) : (
+              sessions.map((session) => (
+                <div
+                  key={session.sessionId}
+                  className="p-3 hover:bg-gray-50 rounded-lg cursor-pointer border-b border-gray-100 flex justify-between items-center"
+                >
+                  <div
+                    onClick={() => loadSession(session.sessionId)}
+                    className="flex-1"
+                  >
+                    <p className="text-sm text-gray-900 truncate">{session.preview}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(session.lastActive).toLocaleDateString()} • {session.messageCount} messages
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSession(session.sessionId);
+                    }}
+                    className="p-1 hover:bg-red-50 rounded"
+                    disabled={loading}
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto p-8">
@@ -190,6 +365,11 @@ const Healthmate = () => {
                   {msg.isFile && <FileText className="w-4 h-4 mr-2 inline-block align-middle" />}
                   {msg.isSummary && <FileText className="w-4 h-4 mr-2 text-green-600 inline-block align-middle" />}
                   <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{msg.text}</pre>
+                  {msg.timestamp && (
+                    <p className="text-xs mt-2 opacity-70">
+                      {new Date(msg.timestamp).toLocaleTimeString()}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -226,17 +406,25 @@ const Healthmate = () => {
                 accept=".pdf,.txt,.docx"
                 onChange={(e) => setFile(e.target.files[0])}
                 className="hidden"
+                disabled={loading}
               />
             </label>
             {file && (
               <button
                 onClick={handleFileUpload}
                 disabled={loading}
-                className={`px-4 py-2.5 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg font-medium text-sm transition-opacity ${
+                className={`px-4 py-2.5 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg font-medium text-sm transition-opacity flex items-center justify-center ${
                   loading ? "opacity-50 cursor-not-allowed" : "opacity-100"
                 }`}
               >
-                {loading ? "Summarizing..." : "Summarize"}
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 text-white spin mr-2" />
+                    Summarizing...
+                  </>
+                ) : (
+                  "Summarize"
+                )}
               </button>
             )}
           </div>
@@ -256,7 +444,9 @@ const Healthmate = () => {
                 placeholder="Ask me anything..."
                 rows={1}
                 disabled={loading}
-                className="flex-1 border-none outline-none resize-none text-sm text-gray-900 bg-transparent p-2 font-sans leading-relaxed min-h-[40px] max-h-[200px]"
+                className={`flex-1 border-none outline-none resize-none text-sm text-gray-900 bg-transparent p-2 font-sans leading-relaxed min-h-[40px] max-h-[200px] ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               />
               <button
                 onClick={handleTextSubmit}

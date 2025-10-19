@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./connection");
 const userRouter = require("./routes/userRoutes");
+const chatRouter = require("./routes/chatRoutes");
 const cookieParser = require("cookie-parser");
 const { GoogleGenAI } = require("@google/genai");
 const multer = require("multer");
@@ -29,6 +30,7 @@ connectDB();
 
 // Routes
 app.use("/api/users", userRouter);
+app.use("/api/chat", chatRouter);
 
 // Helper function to extract text from PDF
 async function extractTextFromPDF(filePath) {

@@ -46,7 +46,6 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   try {
     const { name, email, password, profileImage } = req.body;
-      // const { name, email, password } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -63,6 +62,29 @@ const register = async (req, res) => {
     res.json({ message: "User registered successfully", user });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Get current user
+const getCurrentUser = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json(user);
+  } catch (err) {
+    console.error("Get current user error:", err);
+    res.status(500).json({ error: "Failed to get user" });
   }
 };
 
@@ -86,5 +108,6 @@ const sendWelcomeEmail = async (req, res) => {
 module.exports = {
   register,
   login,
+  getCurrentUser,
   sendWelcomeEmail,
 };
