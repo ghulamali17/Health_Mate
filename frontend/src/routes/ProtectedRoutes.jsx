@@ -10,9 +10,9 @@ const ProtectedRoutes = ({ children, requiredRole }) => {
   }
 
   // Role not allowed
-  if (!requiredRole.includes(user.role)) {
-    return <Navigate to="/unauthorized" replace />;
-  }
+  // if (!requiredRole.includes(user.role)) {
+  //   return <Navigate to="/unauthorized" replace />;
+  // }
 
   // Authorized
   return children;
