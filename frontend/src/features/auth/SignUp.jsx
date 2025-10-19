@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "../../components/Ui/Button";
+import Button from "../../components/ui/Button";
 import EyeIcon from "../../components/ui/EyeIcon";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Logo from "../../assets/logo2.png";
+import Header from "../../components/ui/Header";
 import "./styles.css";
 
 const schema = yup.object().shape({
@@ -28,6 +28,7 @@ const schema = yup.object().shape({
 
 function Signup() {
   const [showPass, setShowPass] = useState(false);
+  const [loadingUser, setLoadingUser] = useState(false);
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
   const [user, setUser] = useState(null);
@@ -41,6 +42,7 @@ function Signup() {
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
+        setLoadingUser(true);
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
@@ -50,6 +52,8 @@ function Signup() {
         setUser(response.data);
       } catch (err) {
         console.error("Failed to fetch user:", err.response?.data || err.message);
+      } finally {
+        setLoadingUser(false);
       }
     };
 
@@ -99,27 +103,7 @@ function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col font-sans">
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={Logo} alt="HealthMate Logo" className="w-10 h-10 object-contain rounded-xl shadow-md" />
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">HealthMate Assistant</h1>
-              <p className="text-xs text-gray-500">Powered by Google AI</p>
-            </div>
-          </div>
-          {user && (
-            <div className="flex items-center gap-3">
-              <img
-                src={user.profileImage}
-                alt={`${user.name}'s Profile`}
-                className="w-10 h-10 object-cover rounded-xl shadow-md"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
+      <Header user={user} loadingUser={loadingUser} />
       <div className="flex-1 flex justify-center items-center px-4">
         <form
           onSubmit={handleSubmit(submitHandler)}

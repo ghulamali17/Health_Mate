@@ -10,20 +10,18 @@ export const AuthProvider = ({ children }) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  //login function
-const login = (userData) => {
-  localStorage.setItem("pos-user", JSON.stringify(userData)); 
-  setUser(userData);
-};
+  // Login function
+  const login = (userData) => {
+    localStorage.setItem("pos-user", JSON.stringify(userData));
+    setUser(userData);
+  };
 
-
-  // logout function
-const logout = () => {
-  localStorage.removeItem("pos-user");    
-  localStorage.removeItem("pos-token");    
-  setUser(null);
-};
-
+  // Logout function
+  const logout = () => {
+    localStorage.removeItem("pos-user");
+    localStorage.removeItem("pos-token");
+    setUser(null);
+  };
 
   return (
     <AuthContext.Provider value={{ user, login, logout }}>
@@ -32,5 +30,5 @@ const logout = () => {
   );
 };
 
-// custom hook to use auth context
+// Custom hook to use auth context
 export const useAuth = () => useContext(AuthContext);
