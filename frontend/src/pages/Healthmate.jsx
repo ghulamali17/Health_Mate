@@ -5,7 +5,7 @@ import Header from "../components/ui/Header";
 import ChatHistorySidebar from "../components/ui/ChatHistorySidebar";
 import ConversationArea from "../components/ui/ConversationArea";
 import InputArea from "../components/ui/InputArea";
-import "./styles.css";
+import "./Styles.css";
 
 const Healthmate = () => {
   const [prompt, setPrompt] = useState("");
