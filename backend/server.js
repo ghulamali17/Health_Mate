@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./config/database");
+const connectDB = require("./connection");
 const cookieParser = require("cookie-parser");
 
 const app = express();
@@ -74,7 +74,8 @@ app.get("/", (req, res) => {
 });
 
 // 404 handler for undefined routes
-app.use("*", (req, res) => {
+// ✅ CORRECT - Use this instead:
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: "Route not found",

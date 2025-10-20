@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const aiController = require("../controllers/aiController");
-const upload = require("../middleware/upload");
+const upload = require("../middlewares/upload");
 
 // AI routes
 router.post("/healthmate", aiController.healthMate);
