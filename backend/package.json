@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "vercel-build": "echo 'No build step required for Node.js'"
+    "vercel-build": "echo 'No build step required'"
   },
   "keywords": ["health", "ai", "medical", "gemini", "express"],
   "author": "",
