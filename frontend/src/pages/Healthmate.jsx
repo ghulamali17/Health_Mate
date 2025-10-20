@@ -246,7 +246,7 @@ const Healthmate = () => {
 
   return (
     <div className="flex h-screen bg-gradient-to-b from-gray-50 to-white font-sans">
-      <ChatHistorySidebar
+      {/* <ChatHistorySidebar
         user={user}
         sessions={sessions}
         sessionId={sessionId}
@@ -256,7 +256,7 @@ const Healthmate = () => {
         deleteSession={deleteSession}
         startNewSession={startNewSession}
         loading={loading}
-      />
+      /> */}
       <div className="flex-1 flex flex-col">
         <Header
           user={user}

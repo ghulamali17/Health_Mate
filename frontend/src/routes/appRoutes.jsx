@@ -10,9 +10,9 @@ const routes = [
   {
     path: "/",
     element: (
-      <ProtectedRoutes requiredRole={["user", "admin"]}>
+      // <ProtectedRoutes requiredRole={["user", "admin"]}>
         <Healthmate />
-      </ProtectedRoutes>
+      // </ProtectedRoutes>
     ),
   },
   { path: "/login/*", element: <Login /> },
