@@ -172,7 +172,7 @@ const Healthmate = () => {
       await saveChatMessage(assistantMessage);
       await fetchSessions();
     } catch (err) {
-      const errorMsg = "Something went wrong. Check your backend or network.";
+      const errorMsg = "Something went wrong. Check yournetwork.";
       setError(errorMsg);
       const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
       setConversation((prev) => [...prev, errorMessage]);
