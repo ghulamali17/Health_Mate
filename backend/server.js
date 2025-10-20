@@ -18,13 +18,16 @@ const upload = multer({ storage: storage });
 
 // Middleware
 app.use(express.json());
+
 app.use(cors({
   origin: [
     "http://localhost:5173",
     "https://health-mate-dcv3.vercel.app",
+    "https://health-mate-3x6x-h4sg0hzj5-ghulam-alis-projects-b7b1d0e4.vercel.app"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 
