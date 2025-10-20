@@ -39,7 +39,7 @@ const Healthmate = () => {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-3x6x.vercel.app/api/users/current", {
+        const response = await axios.get("https://health-mate-qknk.vercel.app/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -77,7 +77,7 @@ const Healthmate = () => {
   const fetchSessions = async () => {
     if (!user) return;
     try {
-      const response = await axios.get(`https://health-mate-3x6x.vercel.app/api/chat/sessions/${user._id}`);
+      const response = await axios.get(`https://health-mate-qknk.vercel.app/api/chat/sessions/${user._id}`);
       setSessions(response.data.sessions || []);
     } catch (err) {
       console.error("Failed to fetch sessions:", err);
@@ -88,7 +88,7 @@ const Healthmate = () => {
     if (!user || !sessionId) return;
     try {
       const response = await axios.get(
-        `https://health-mate-3x6x.vercel.app/api/chat/history/${user._id}/${sessionId}`
+        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${sessionId}`
       );
       setConversation(response.data.messages || []);
     } catch (err) {
@@ -99,7 +99,7 @@ const Healthmate = () => {
   const saveChatMessage = async (message) => {
     if (!user || !sessionId) return;
     try {
-      await axios.post("https://health-mate-3x6x.vercel.app/api/chat/save", {
+      await axios.post("https://health-mate-qknk.vercel.app/api/chat/save", {
         userId: user._id,
         sessionId,
         message,
@@ -114,7 +114,7 @@ const Healthmate = () => {
     setIsSidebarOpen(false);
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/chat/history/${user._id}/${selectedSessionId}`
+        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${selectedSessionId}`
       );
       setConversation(response.data.messages || []);
     } catch (err) {
@@ -132,7 +132,7 @@ const Healthmate = () => {
   const deleteSession = async (sessionIdToDelete) => {
     if (!user) return;
     try {
-      await axios.delete(`https://health-mate-3x6x.vercel.app/api/chat/session/${user._id}/${sessionIdToDelete}`);
+      await axios.delete(`https://health-mate-qknk.vercel.app/api/chat/session/${user._id}/${sessionIdToDelete}`);
       fetchSessions();
       if (sessionIdToDelete === sessionId) {
         startNewSession();
@@ -157,7 +157,7 @@ const Healthmate = () => {
     setPrompt("");
 
     try {
-      const res = await fetch("https://health-mate-3x6x.vercel.app/api/healthmate", {
+      const res = await fetch("https://health-mate-qknk.vercel.app/api/ai/healthmate", { // CHANGED
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: currentPrompt }),
@@ -194,7 +194,7 @@ const Healthmate = () => {
 
     const fileMessage = {
       type: "user",
-      text: `📄 Up\Sigd file: ${file.name}`,
+      text: `📄 Uploaded file: ${file.name}`,
       isFile: true,
       fileName: file.name,
       timestamp: new Date(),
@@ -206,7 +206,7 @@ const Healthmate = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("https://health-mate-3x6x.vercel.app/api/summarize", {
+      const res = await fetch("https://health-mate-qknk.vercel.app/api/ai/summarize", { // CHANGED
         method: "POST",
         body: formData,
       });
