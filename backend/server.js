@@ -15,33 +15,6 @@ const allowedOrigins = [
   "https://health-mate-*.vercel.app"
 ];
 
-// app.use(cors({
-//   origin: function (origin, callback) {
-//     if (!origin) return callback(null, true);
-    
-//     if (allowedOrigins.some(allowedOrigin => {
-//       if (allowedOrigin.includes('*')) {
-//         const regex = new RegExp(allowedOrigin.replace('*', '.*'));
-//         return regex.test(origin);
-//       }
-//       return allowedOrigin === origin;
-//     })) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error('Not allowed by CORS'));
-//     }
-//   },
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   credentials: true,
-//   allowedHeaders: [
-//     "Content-Type", 
-//     "Authorization", 
-//     "X-Requested-With",
-//     "Content-Length",
-//     "multipart/form-data"
-//   ]
-// }));
-
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
@@ -60,8 +33,35 @@ app.use(cors({
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+  allowedHeaders: [
+    "Content-Type", 
+    "Authorization", 
+    "X-Requested-With",
+    "Content-Length",
+    "multipart/form-data"
+  ]
 }));
+
+// app.use(cors({
+//   origin: function (origin, callback) {
+//     if (!origin) return callback(null, true);
+    
+//     if (allowedOrigins.some(allowedOrigin => {
+//       if (allowedOrigin.includes('*')) {
+//         const regex = new RegExp(allowedOrigin.replace('*', '.*'));
+//         return regex.test(origin);
+//       }
+//       return allowedOrigin === origin;
+//     })) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   credentials: true,
+//   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"]
+// }));
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
