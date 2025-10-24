@@ -9,6 +9,7 @@ const multer = require("multer");
 const fs = require("fs");
 const PDFParser = require("pdf2json");
 const mammoth = require("mammoth");
+const vitalRouter = require("./routes/vitalRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,6 +35,7 @@ connectDB();
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/chat", chatRouter);
+app.use("/api/vitals", vitalRouter);
 
 // Helper function to extract text from PDF buffer (updated for Vercel)
 async function extractTextFromPDFBuffer(buffer) {

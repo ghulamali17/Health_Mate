@@ -182,60 +182,6 @@ const Healthmate = () => {
     }
   };
 
-  const handleFileUpload = async () => {
-    if (!file) {
-      setError("Please select a file first!");
-      return;
-    }
-
-    setSummary("");
-    setLoading(true);
-    setError("");
-
-    const fileMessage = {
-      type: "user",
-      text: `📄 Uploaded file: ${file.name}`,
-      isFile: true,
-      fileName: file.name,
-      timestamp: new Date(),
-    };
-    setConversation((prev) => [...prev, fileMessage]);
-    await saveChatMessage(fileMessage);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("http://localhost:3001/api/summarize", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      const summaryText = data.summary || data.error;
-      setSummary(summaryText);
-      
-      const summaryMessage = {
-        type: "assistant",
-        text: summaryText,
-        isSummary: true,
-        timestamp: new Date(),
-      };
-      setConversation((prev) => [...prev, summaryMessage]);
-      await saveChatMessage(summaryMessage);
-      await fetchSessions();
-    } catch (err) {
-      const errorMsg = "File summarization failed.";
-      setError(errorMsg);
-      const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
-      setConversation((prev) => [...prev, errorMessage]);
-      await saveChatMessage(errorMessage);
-    } finally {
-      setLoading(false);
-      setFile(null);
-    }
-  };
-
   const handleTextareaChange = (e) => {
     setPrompt(e.target.value);
     if (textareaRef.current) {
@@ -278,7 +224,7 @@ const Healthmate = () => {
           setFile={setFile}
           handleTextareaChange={handleTextareaChange}
           handleTextSubmit={handleTextSubmit}
-          handleFileUpload={handleFileUpload}
+
         />
       </div>
     </div>
