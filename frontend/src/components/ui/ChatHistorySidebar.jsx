@@ -92,11 +92,14 @@ const ChatHistorySidebar = ({
         )}
       </div>
       
-      {/* Session info footer */}
-      {sessionId && (
+      {/* User info */}
+      {user && (
         <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <p className="text-sm font-medium text-gray-900 truncate">
+            {user.name}
+          </p>
           <p className="text-xs text-gray-500 truncate">
-            Current Session: <span className="font-mono">{sessionId.substring(0, 12)}...</span>
+            {user.email}
           </p>
         </div>
       )}

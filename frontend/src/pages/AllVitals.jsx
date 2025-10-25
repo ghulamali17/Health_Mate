@@ -15,6 +15,7 @@ import {
   AlertCircle,
   User
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 function AllVitals() {
   const [vitals, setVitals] = useState([]);
@@ -43,32 +44,39 @@ function AllVitals() {
     }
   };
 
-  const fetchVitals = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("pos-token");
-      if (!token) {
-        alert("⚠️ Please log in again.");
-        return;
-      }
-
-      const response = await fetch("http://localhost:3001/api/vitals/getitems", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-
-      const sorted = data.sort(
-        (a, b) => new Date(b.measuredAt) - new Date(a.measuredAt)
-      );
-
-      setVitals(sorted);
-      setFilteredVitals(sorted);
-    } catch (err) {
-      console.error("Error fetching vitals:", err);
-    } finally {
-      setLoading(false);
+const fetchVitals = async () => {
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("pos-token");
+    if (!token) {
+      toast.error("⚠️ Please log in again.");
+      return;
     }
-  };
+
+    const response = await fetch("http://localhost:3001/api/vitals/useritems", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log("Received vitals data:", data); 
+
+    const sorted = data.sort(
+      (a, b) => new Date(b.measuredAt) - new Date(a.measuredAt)
+    );
+
+    setVitals(sorted);
+    setFilteredVitals(sorted);
+  } catch (err) {
+    console.error("Error fetching vitals:", err);
+    toast.error("Failed to fetch vitals. Check console for details.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSearch = (e) => {
     const q = e.target.value.toLowerCase();
@@ -97,7 +105,7 @@ function AllVitals() {
       setFilteredVitals((prev) => prev.filter((v) => v._id !== id));
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Failed to delete vital record");
+      toast.error("Failed to delete vital record");
     }
   };
 

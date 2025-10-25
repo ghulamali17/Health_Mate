@@ -7,6 +7,6 @@ if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`✅ Server is running at http://localhost:${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌐 Allowed CORS origins:`, allowedOrigins);
+    // console.log(`🌐 Allowed CORS origins:`, allowedOrigins);
   });
 }

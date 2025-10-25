@@ -1,78 +1,125 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import { 
   Activity, FileText, MessageSquare, Plus, TrendingUp, 
   Heart, Calendar, Clock, ArrowRight, Upload, ChevronRight,
-  Droplet, Weight, Thermometer, BarChart3, User, Settings
+  Droplet, Weight, Thermometer, BarChart3, User, Settings, LogOut, LayoutDashboard
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
+import { useAuth } from "../../context/authContext";
+import { toast } from "react-toastify";
+import useClickOutside from "../../hooks/useClickOutside";
+
 
 const Dashboard = () => {
-
-  const[user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [vitals, setVitals] = useState([]);
   const [loadingVitals, setLoadingVitals] = useState(false);
   const [loadingUser, setLoadingUser] = useState(false);
-
-    // Fetch current user
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        try {
-          setLoadingUser(true);
-          const token = localStorage.getItem("pos-token");
-          if (!token) return;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
-          const response = await axios.get("http://localhost:3001/api/users/current", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUser(response.data);
-        } catch (err) {
-          console.error("Failed to fetch user:", err.response?.data || err.message);
-        } finally {
-          setLoadingUser(false);
-        }
-      };
-  
-      fetchCurrentUser();
-    }, []);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-
-// 🧠 Fetch all vitals on load
-useEffect(() => {
-  fetchVitals();
-}, []);
-
-// 📦 Fetch vitals (with optional search)
-const fetchVitals = async () => {
-  try {
-    setLoadingVitals(true);
-    const token = localStorage.getItem("pos-token");
-    if (!token) {
-      // alert("You are not logged in. Please log in again.");
-      return;
+  // Stats state with real data
+  const [stats, setStats] = useState({
+    totalReports: 12,
+    totalVitals: 0,
+    totalChats: 0, 
+    lastVital: {
+      bp: "--/--",
+      sugar: "--",
+      date: "No data"
     }
+  });
 
-    const res = await axios.get("http://localhost:3001/api/vitals/getitems", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  // Update stats when vitals change
+  useEffect(() => {
+    setStats(prev => ({
+      ...prev,
+      totalVitals: vitals.length,
+      lastVital: {
+        bp: vitals.length > 0 ? `${vitals[vitals.length - 1].bloodPressure?.systolic || "--"}/${vitals[vitals.length - 1].bloodPressure?.diastolic || "--"}` : "--/--",
+        sugar: vitals.length > 0 ? vitals[vitals.length - 1].bloodSugar || "--" : "--",
+        date: vitals.length > 0 ? new Date(vitals[vitals.length - 1].measuredAt).toLocaleDateString() : "No data"
+      }
+    }));
+  }, [vitals]);
 
-    setVitals(res.data);
-  } catch (err) {
-    console.error("Fetch vitals error:", err.response?.data || err.message);
-  } finally {
-    setLoadingVitals(false);
+  const handleLogout = () => {
+    logout();
+    setIsDropdownOpen(false);
+    navigate("/login");
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    setIsDropdownOpen(false);
   }
-};
+
+  
+  const dropdownRef = useRef(null);
+
+   // Use the click outside hook
+  useClickOutside(dropdownRef, () => {
+    setIsDropdownOpen(false);
+  });
 
 
-   // ❌ Delete vital
+  // Fetch current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        setLoadingUser(true);
+        const token = localStorage.getItem("pos-token");
+        if (!token) return;
+
+        const response = await axios.get("http://localhost:3001/api/users/current", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(response.data);
+      } catch (err) {
+        console.error("Failed to fetch user:", err.response?.data || err.message);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
+
+  // Fetch all vitals on load
+  useEffect(() => {
+    fetchVitals();
+  }, []);
+
+  // Fetch vitals 
+  const fetchVitals = async () => {
+    try {
+      setLoadingVitals(true);
+      const token = localStorage.getItem("pos-token");
+      if (!token) return;
+
+      const res = await axios.get("http://localhost:3001/api/vitals/useritems", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setVitals(res.data);
+    } catch (err) {
+      console.error("Fetch vitals error:", err.response?.data || err.message);
+    } finally {
+      setLoadingVitals(false);
+    }
+  };
+
+  // Delete vital
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("pos-token");
-      if (!token) return alert("Unauthorized request. Please login again.");
+      if (!token) return toast.error("Unauthorized request. Please login again.");
 
       await axios.delete(`http://localhost:3001/api/vitals/deleteitem/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -85,20 +132,7 @@ const fetchVitals = async () => {
     }
   };
 
-
-  // Sample data - Replace with real data from your backend
-  const [stats] = useState({
-    totalReports: 12,
-    totalVitals: 24,
-    totalChats: 8,
-    lastVital: {
-      bp: "120/80",
-      sugar: "95",
-      date: "24 Oct 2025"
-    }
-  });
-  const navigate = useNavigate();
-
+  // Sample data for reports
   const [recentReports] = useState([
     {
       id: 1,
@@ -123,33 +157,6 @@ const fetchVitals = async () => {
     }
   ]);
 
-  const [recentVitals] = useState([
-    {
-      id: 1,
-      date: "24 Oct 2025",
-      time: "09:30 AM",
-      bp: "120/80",
-      sugar: "95",
-      weight: "72"
-    },
-    {
-      id: 2,
-      date: "23 Oct 2025",
-      time: "08:45 AM",
-      bp: "118/78",
-      sugar: "92",
-      weight: "72"
-    },
-    {
-      id: 3,
-      date: "22 Oct 2025",
-      time: "09:15 AM",
-      bp: "122/82",
-      sugar: "98",
-      weight: "72.5"
-    }
-  ]);
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -164,17 +171,48 @@ const fetchVitals = async () => {
               <p className="text-sm text-gray-500">Apki sehat, ek nazar mein</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Settings className="w-5 h-5 text-gray-600" />
-            </button>
-          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-  <User className="w-4 h-4 text-gray-600" />
-  <span className="text-sm font-medium text-gray-700">
-    {loadingUser ? "Loading..." : user?.name || "Guest"}
-  </span>
-</div>
-
+          <div  ref={dropdownRef} className="flex items-center gap-3 relative">
+            <div className="relative hidden md:block">
+              <button 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <Settings className="w-5 h-5 text-gray-600" />
+              </button>
+              
+              {isDropdownOpen && (
+                <div className="absolute left-0 top-12 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn z-50">
+                  <button
+                    onClick={() => handleNavigation("/")}
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-t-xl transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-gray-600" />
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/profile")}
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-gray-600" />
+                    Profile
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"
+                  >
+                    <LogOut className="w-4 h-4 text-red-600" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+              <User className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-700">
+                {loadingUser ? "Loading..." : user?.name || "Guest"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -198,28 +236,25 @@ const fetchVitals = async () => {
           </div>
 
           {/* Total Vitals */}
-         <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-shadow">
-  <div className="flex items-center justify-between mb-3">
-    <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-      <Heart className="w-6 h-6" />
-    </div>
-    <Activity className="w-5 h-5 opacity-70" />
-  </div>
-  <div>
-    <p className="text-red-100 text-sm mb-1">Vitals Recorded</p>
-    <p className="text-3xl font-bold">{vitals.length}</p>
-
-    {vitals.length > 0 ? (
-      <p className="text-xs text-red-100 mt-2">
-        BP: {vitals[vitals.length - 1].bloodPressure?.systolic}/
-        {vitals[vitals.length - 1].bloodPressure?.diastolic} mmHg
-      </p>
-    ) : (
-      <p className="text-xs text-red-100 mt-2">No vitals recorded yet</p>
-    )}
-  </div>
-</div>
-
+          <div className="bg-gradient-to-br from-red-500 to-pink-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-shadow">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Heart className="w-6 h-6" />
+              </div>
+              <Activity className="w-5 h-5 opacity-70" />
+            </div>
+            <div>
+              <p className="text-red-100 text-sm mb-1">Vitals Recorded</p>
+              <p className="text-3xl font-bold">{stats.totalVitals}</p>
+              {stats.totalVitals > 0 ? (
+                <p className="text-xs text-red-100 mt-2">
+                  BP: {stats.lastVital.bp} mmHg
+                </p>
+              ) : (
+                <p className="text-xs text-red-100 mt-2">No vitals recorded yet</p>
+              )}
+            </div>
+          </div>
 
           {/* Total Chats */}
           <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white shadow-lg hover:shadow-xl transition-shadow">
@@ -334,96 +369,90 @@ const fetchVitals = async () => {
 
           {/* Recent Vitals */}
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-  <div className="flex items-center justify-between mb-4">
-    <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-      <Heart className="w-5 h-5 text-red-500" />
-      Recent Vitals
-    </h2>
-    <button onClick={()=>navigate("/all-vitals")} className="text-sm cursor-pointer text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
-      View All
-      <ArrowRight className="w-4 h-4" />
-    </button>
-  </div>
-
-  {loadingVitals ? (
-    <div className="flex justify-center items-center py-10">
-      <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-      <p className="ml-2 text-gray-500 text-sm">Loading vitals...</p>
-    </div>
-  ) : vitals.length === 0 ? (
-    <div className="text-center py-8">
-      <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-      <p className="text-gray-500 text-sm">No vitals recorded yet</p>
-      <p className="text-gray-400 text-xs mt-1">Start tracking your health today</p>
-    </div>
-  ) : (
-    <div className="space-y-3">
-      {vitals
-        .slice(-3) // Show last 3 vitals
-        .reverse()
-        .map((vital) => (
-          <div
-            key={vital._id}
-            className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            {/* Header: Date + Time */}
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <p className="text-sm font-medium text-gray-900">
-                  {new Date(vital.measuredAt).toLocaleDateString()}
-                </p>
-              </div>
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                {new Date(vital.measuredAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <Heart className="w-5 h-5 text-red-500" />
+                Recent Vitals
+              </h2>
+              <button onClick={()=>navigate("/all-vitals")} className="text-sm cursor-pointer text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
+                View All
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Vitals Grid */}
-            <div className="grid grid-cols-3 gap-2">
-              {/* Blood Pressure */}
-              <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
-                <Activity className="w-4 h-4 text-red-500" />
-                <div>
-                  <p className="text-xs text-gray-500">BP</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {vital.bloodPressure?.systolic}/{vital.bloodPressure?.diastolic}
-                  </p>
-                </div>
+            {loadingVitals ? (
+              <div className="flex justify-center items-center py-10">
+                <div className="w-6 h-6 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="ml-2 text-gray-500 text-sm">Loading vitals...</p>
               </div>
+            ) : vitals.length === 0 ? (
+              <div className="text-center py-8">
+                <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">No vitals recorded yet</p>
+                <p className="text-gray-400 text-xs mt-1">Start tracking your health today</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {vitals
+                  .slice(-3)
+                  .reverse()
+                  .map((vital) => (
+                    <div
+                      key={vital._id}
+                      className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <p className="text-sm font-medium text-gray-900">
+                            {new Date(vital.measuredAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          {new Date(vital.measuredAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                      </div>
 
-              {/* Blood Sugar */}
-              <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
-                <Droplet className="w-4 h-4 text-blue-500" />
-                <div>
-                  <p className="text-xs text-gray-500">Sugar</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {vital.bloodSugar ?? "--"}
-                  </p>
-                </div>
-              </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex items-center gap-2 p-2 bg-red-50 rounded">
+                          <Activity className="w-4 h-4 text-red-500" />
+                          <div>
+                            <p className="text-xs text-gray-500">BP</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {vital.bloodPressure?.systolic || "--"}/{vital.bloodPressure?.diastolic || "--"}
+                            </p>
+                          </div>
+                        </div>
 
-              {/* Weight */}
-              <div className="flex items-center gap-2 p-2 bg-purple-50 rounded">
-                <Weight className="w-4 h-4 text-purple-500" />
-                <div>
-                  <p className="text-xs text-gray-500">Weight</p>
-                  <p className="text-sm font-semibold text-gray-900">
-                    {vital.weight ?? "--"}
-                  </p>
-                </div>
+                        <div className="flex items-center gap-2 p-2 bg-blue-50 rounded">
+                          <Droplet className="w-4 h-4 text-blue-500" />
+                          <div>
+                            <p className="text-xs text-gray-500">Sugar</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {vital.bloodSugar || "--"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 p-2 bg-purple-50 rounded">
+                          <Weight className="w-4 h-4 text-purple-500" />
+                          <div>
+                            <p className="text-xs text-gray-500">Weight</p>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {vital.weight || "--"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </div>
-            </div>
+            )}
           </div>
-        ))}
-    </div>
-  )}
-</div>
-
         </div>
 
         {/* Health Tips Banner */}

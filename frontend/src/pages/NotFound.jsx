@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../context/authContext";
 import Logo from "../assets/logo2.png";
-// import "./Styles.css";
 
 function NotFound() {
   const { user: authUser } = useAuth();
@@ -18,7 +17,7 @@ function NotFound() {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-urpl.vercel.app/api/users/current", {
+        const response = await axios.get("http://localhost:3001/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);

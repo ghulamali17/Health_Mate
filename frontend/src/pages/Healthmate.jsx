@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "../context/authContext";
@@ -19,8 +19,6 @@ import "./Styles.css";
 const Healthmate = () => {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
-  const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [conversation, setConversation] = useState([]);
@@ -52,7 +50,7 @@ const Healthmate = () => {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-qknk.vercel.app/api/users/current", {
+        const response = await axios.get("http://localhost:3001/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -66,28 +64,7 @@ const Healthmate = () => {
     fetchCurrentUser();
   }, []);
 
-  // Load chat history when user or session changes
-  useEffect(() => {
-    if (user && sessionId) {
-      loadChatHistory();
-    }
-  }, [user, sessionId]);
-
-  // Fetch all sessions when user changes
-  useEffect(() => {
-    if (user) {
-      fetchSessions();
-    }
-  }, [user]);
-
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [conversation, loading]);
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (!user) return;
     try {
       dispatch(setSessionLoading(true));
@@ -98,30 +75,52 @@ const Healthmate = () => {
     } finally {
       dispatch(setSessionLoading(false));
     }
-  };
+  }, [user, dispatch]);
 
-  const loadChatHistory = async () => {
+  const loadChatHistory = useCallback(async () => {
     if (!user || !sessionId) return;
     try {
       const response = await axios.get(
-        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${sessionId}`
+        `http://localhost:3001/api/chat/history/${user._id}/${sessionId}`
       );
       setConversation(response.data.messages || []);
       
-      // Set current session in Redux
-      const currentSession = sessions.find(session => session.sessionId === sessionId);
+      // Get fresh sessions state
+      const currentSessionsResponse = await axios.get(`http://localhost:3001/api/chat/sessions/${user._id}`);
+      const currentSession = currentSessionsResponse.data.sessions?.find(
+        session => session.sessionId === sessionId
+      );
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
       }
     } catch (err) {
       console.error("Failed to load chat history:", err);
     }
-  };
+  }, [user, sessionId, dispatch]);
+
+  // Load chat history when user or session changes
+  useEffect(() => {
+    loadChatHistory();
+  }, [loadChatHistory]);
+
+  // Fetch all sessions when user changes
+  useEffect(() => {
+    if (user) {
+      fetchSessions();
+    }
+  }, [user, fetchSessions]);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [conversation, loading]);
 
   const saveChatMessage = async (message) => {
     if (!user || !sessionId) return;
     try {
-      await axios.post("https://health-mate-qknk.vercel.app/api/chat/save", {
+      await axios.post("http://localhost:3001/api/chat/save", {
         userId: user._id,
         sessionId,
         message,
@@ -136,11 +135,10 @@ const Healthmate = () => {
     setIsSidebarOpen(false);
     try {
       const response = await axios.get(
-        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${selectedSessionId}`
+        `http://localhost:3001/api/chat/history/${user._id}/${selectedSessionId}`
       );
       setConversation(response.data.messages || []);
       
-      // Set current session in Redux
       const currentSession = sessions.find(session => session.sessionId === selectedSessionId);
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
@@ -181,88 +179,63 @@ const Healthmate = () => {
     }
   };
 
-  const handleTextSubmit = async (e) => {
-    if (e) e.preventDefault();
-    if (!prompt.trim() || loading) return;
+ const handleTextSubmit = async (e) => {
+  if (e) e.preventDefault();
+  if (!prompt.trim() || loading) return;
 
-    const userMessage = { 
-      type: "user", 
-      text: prompt, 
+  const userMessage = { 
+    type: "user", 
+    text: prompt, 
+    timestamp: new Date().toISOString() 
+  };
+  
+  const updatedConversation = [...conversation, userMessage];
+  setConversation(updatedConversation);
+  await saveChatMessage(userMessage);
+
+  setError("");
+  setResponse("");
+  setLoading(true);
+  const currentPrompt = prompt;
+  setPrompt("");
+
+  try {
+    const res = await fetch("http://localhost:3001/api/healthmate", { 
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: currentPrompt }),
+    });
+
+    const data = await res.json();
+    const aiResponse = data.text || "No response.";
+    setResponse(aiResponse);
+    
+    const assistantMessage = { 
+      type: "assistant", 
+      text: aiResponse, 
       timestamp: new Date().toISOString() 
     };
     
-    const updatedConversation = [...conversation, userMessage];
-    setConversation(updatedConversation);
-    await saveChatMessage(userMessage);
-
-    setError("");
-    setResponse("");
-    setLoading(true);
-    const currentPrompt = prompt;
-    setPrompt("");
-
-    try {
-      const res = await fetch("https://health-mate-qknk.vercel.app/api/ai/healthmate", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentPrompt }),
-      });
-
-      const data = await res.json();
-      const aiResponse = data.text || "No response.";
-      setResponse(aiResponse);
-      
-      const assistantMessage = { 
-        type: "assistant", 
-        text: aiResponse, 
-        timestamp: new Date().toISOString() 
-      };
-      
-      const finalConversation = [...updatedConversation, assistantMessage];
-      setConversation(finalConversation);
-      await saveChatMessage(assistantMessage);
-      await fetchSessions();
-    } catch (err) {
-      const errorMsg = "Something went wrong. Check yournetwork.";
-      setError(errorMsg);
-      const errorMessage = { 
-        type: "error", 
-        text: errorMsg, 
-        timestamp: new Date().toISOString() 
-      };
-      
-      const errorConversation = [...updatedConversation, errorMessage];
-      setConversation(errorConversation);
-      await saveChatMessage(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-
-    const summaryText = data.summary || data.error;
-    setSummary(summaryText);
-    
-    const summaryMessage = {
-      type: "assistant",
-      text: summaryText,
-      isSummary: true,
-      timestamp: new Date(),
-    };
-    setConversation((prev) => [...prev, summaryMessage]);
-    await saveChatMessage(summaryMessage);
+    const finalConversation = [...updatedConversation, assistantMessage];
+    setConversation(finalConversation);
+    await saveChatMessage(assistantMessage);
     await fetchSessions();
   } catch (err) {
-    console.error("File upload error:", err);
-    const errorMsg = err.message || "File summarization failed.";
+    const errorMsg = "Something went wrong. Check your network.";
     setError(errorMsg);
-    const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
-    setConversation((prev) => [...prev, errorMessage]);
+    const errorMessage = { 
+      type: "error", 
+      text: errorMsg, 
+      timestamp: new Date().toISOString() 
+    };
+    
+    const errorConversation = [...updatedConversation, errorMessage];
+    setConversation(errorConversation);
     await saveChatMessage(errorMessage);
   } finally {
     setLoading(false);
-    setFile(null);
   }
 };
-
   const handleTextareaChange = (e) => {
     setPrompt(e.target.value);
     if (textareaRef.current) {
@@ -273,7 +246,7 @@ const Healthmate = () => {
 
   return (
     <div className="flex h-screen bg-gradient-to-b from-gray-50 to-white font-sans">
-      {/* <ChatHistorySidebar
+      <ChatHistorySidebar
         user={user}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
@@ -281,7 +254,7 @@ const Healthmate = () => {
         deleteSession={deleteSession}
         startNewSession={startNewSession}
         loading={loading}
-      /> */}
+      />
       <div className="flex-1 flex flex-col">
         <Header
           user={user}
@@ -296,12 +269,9 @@ const Healthmate = () => {
         />
         <InputArea
           prompt={prompt}
-          file={file}
           error={error}
           loading={loading}
           textareaRef={textareaRef}
-          setPrompt={setPrompt}
-          setFile={setFile}
           handleTextareaChange={handleTextareaChange}
           handleTextSubmit={handleTextSubmit}
         />
