@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 import { useAuth } from "../../context/authContext";
+import { toast } from "react-toastify";
 
 const Dashboard = () => {
 
@@ -80,7 +81,7 @@ const fetchVitals = async () => {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("pos-token");
-      if (!token) return alert("Unauthorized request. Please login again.");
+      if (!token) return toast.error("Unauthorized request. Please login again.");
 
       await axios.delete(`http://localhost:3001/api/vitals/deleteitem/${id}`, {
         headers: { Authorization: `Bearer ${token}` },

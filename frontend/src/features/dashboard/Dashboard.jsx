@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import { 
   Activity, FileText, MessageSquare, Plus, TrendingUp, 
   Heart, Calendar, Clock, ArrowRight, Upload, ChevronRight,
@@ -8,6 +8,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
 import { useAuth } from "../../context/authContext";
+import { toast } from "react-toastify";
+import useClickOutside from "../../hooks/useClickOutside";
+
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -23,7 +26,7 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalReports: 12,
     totalVitals: 0,
-    totalChats: 0, // You can keep this as 0 or remove it if not needed
+    totalChats: 0, 
     lastVital: {
       bp: "--/--",
       sugar: "--",
@@ -53,7 +56,16 @@ const Dashboard = () => {
   const handleNavigation = (path) => {
     navigate(path);
     setIsDropdownOpen(false);
-  };
+  }
+
+  
+  const dropdownRef = useRef(null);
+
+   // Use the click outside hook
+  useClickOutside(dropdownRef, () => {
+    setIsDropdownOpen(false);
+  });
+
 
   // Fetch current user
   useEffect(() => {
@@ -107,7 +119,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("pos-token");
-      if (!token) return alert("Unauthorized request. Please login again.");
+      if (!token) return toast.error("Unauthorized request. Please login again.");
 
       await axios.delete(`http://localhost:3001/api/vitals/deleteitem/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -159,7 +171,7 @@ const Dashboard = () => {
               <p className="text-sm text-gray-500">Apki sehat, ek nazar mein</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 relative">
+          <div  ref={dropdownRef} className="flex items-center gap-3 relative">
             <div className="relative hidden md:block">
               <button 
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)} 

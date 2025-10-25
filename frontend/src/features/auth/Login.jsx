@@ -10,6 +10,7 @@ import Header from "../../components/ui/Header";
 import ChatHistorySidebar from "../../components/ui/ChatHistorySidebar";
 import "./styles.css";
 import { Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 
 
 const schema = yup.object().shape({
@@ -72,16 +73,16 @@ function Login() {
       if (message === "success") {
         login(user);
         localStorage.setItem("pos-token", token);
-        alert("Successfully logged in");
+        toast.success("Successfully logged in");
         navigate("/");
       } else if (message === "No record found") {
-        alert("No user found with this email");
+        toast.error("No user found with this email");
       } else if (message === "Incorrect password") {
-        alert("Incorrect password");
+        toast.error("Incorrect password");
       }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoadingSubmit(false);
     }

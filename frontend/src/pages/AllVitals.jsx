@@ -15,6 +15,7 @@ import {
   AlertCircle,
   User
 } from "lucide-react";
+import { toast } from "react-toastify";
 
 function AllVitals() {
   const [vitals, setVitals] = useState([]);
@@ -48,7 +49,7 @@ const fetchVitals = async () => {
     setLoading(true);
     const token = localStorage.getItem("pos-token");
     if (!token) {
-      alert("⚠️ Please log in again.");
+      toast.error("⚠️ Please log in again.");
       return;
     }
 
@@ -71,7 +72,7 @@ const fetchVitals = async () => {
     setFilteredVitals(sorted);
   } catch (err) {
     console.error("Error fetching vitals:", err);
-    alert("Failed to fetch vitals. Check console for details.");
+    toast.error("Failed to fetch vitals. Check console for details.");
   } finally {
     setLoading(false);
   }
@@ -104,7 +105,7 @@ const fetchVitals = async () => {
       setFilteredVitals((prev) => prev.filter((v) => v._id !== id));
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Failed to delete vital record");
+      toast.error("Failed to delete vital record");
     }
   };
 

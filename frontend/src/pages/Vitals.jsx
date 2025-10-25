@@ -13,6 +13,7 @@ import {
   Save
 } from "lucide-react";
 import { useAuth } from "../context/authContext";
+import { toast } from "react-toastify";
 const AddVitals = () => {
   const {
     register,
@@ -45,7 +46,7 @@ const AddVitals = () => {
       data.heartRate;
 
     if (!hasAnyVital) {
-      alert("⚠️ Please enter at least one vital measurement");
+      toast.error("⚠️ Please enter at least one vital measurement");
       return;
     }
 
@@ -53,7 +54,7 @@ const AddVitals = () => {
       (data.bloodPressureSystolic && !data.bloodPressureDiastolic) ||
       (!data.bloodPressureSystolic && data.bloodPressureDiastolic)
     ) {
-      alert("⚠️ Please enter both systolic and diastolic values");
+      toast.error("⚠️ Please enter both systolic and diastolic values");
       return;
     }
 
@@ -90,12 +91,12 @@ try {
   );
 
   if (res.status === 201) {
-    alert("✅ Vitals saved successfully!");
+    toast.success("✅ Vitals saved successfully!");
     reset();
   }
 } catch (err) {
   console.error("Error saving vitals:", err.response?.data || err.message);
-  alert("❌ Failed to save vitals. Please try again.");
+  toast.error("❌ Failed to save vitals. Please try again.");
 }
 
   }
