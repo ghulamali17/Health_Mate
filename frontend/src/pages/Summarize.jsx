@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Upload, FileText, Loader2, CheckCircle, AlertCircle, ArrowLeft,User } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+  User,
+} from "lucide-react";
 import axios from "axios";
 const UploadReportPage = () => {
   const [file, setFile] = useState(null);
@@ -20,33 +28,39 @@ const UploadReportPage = () => {
       setDragActive(false);
     }
   };
-    // Fetch current user
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        try {
-          setLoadingUser(true);
-          const token = localStorage.getItem("pos-token");
-          if (!token) return;
-  
-          const response = await axios.get("http://localhost:3001/api/users/current", {
+  // Fetch current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        setLoadingUser(true);
+        const token = localStorage.getItem("pos-token");
+        if (!token) return;
+
+        const response = await axios.get(
+          "http://localhost:3001/api/users/current",
+          {
             headers: { Authorization: `Bearer ${token}` },
-          });
-          setUser(response.data);
-        } catch (err) {
-          console.error("Failed to fetch user:", err.response?.data || err.message);
-        } finally {
-          setLoadingUser(false);
-        }
-      };
-  
-      fetchCurrentUser();
-    }, []);
+          }
+        );
+        setUser(response.data);
+      } catch (err) {
+        console.error(
+          "Failed to fetch user:",
+          err.response?.data || err.message
+        );
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0]);
       setError("");
@@ -114,20 +128,23 @@ const UploadReportPage = () => {
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">💚 HealthMate</h1>
-                <p className="text-sm text-gray-500">Upload & Analyze Medical Reports</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  💚 HealthMate
+                </h1>
+                <p className="text-sm text-gray-500">
+                  Upload & Analyze Medical Reports
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
-             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-  <User className="w-4 h-4 text-gray-600" />
-  <span className="text-sm font-medium text-gray-700">
-    {loadingUser ? "Loading..." : user?.name || "Guest"}
-  </span>
-</div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+                <User className="w-4 h-4 text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">
+                  {loadingUser ? "Loading..." : user?.name || "Guest"}
+                </span>
+              </div>
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-semibold">
-              {user?.name ? user.name.charAt(0).toUpperCase() : "G"}
-
+                {user?.name ? user.name.charAt(0).toUpperCase() : "G"}
               </div>
             </div>
           </div>
@@ -139,8 +156,10 @@ const UploadReportPage = () => {
         {/* Upload Section */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
           <div className="p-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Upload Medical Report</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Upload Medical Report
+            </h2>
+
             {/* Drag and Drop Zone */}
             <div
               className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${
@@ -153,7 +172,11 @@ const UploadReportPage = () => {
               onDragOver={handleDrag}
               onDrop={handleDrop}
             >
-              <Upload className={`w-16 h-16 mx-auto mb-4 ${dragActive ? "text-green-500" : "text-gray-400"}`} />
+              <Upload
+                className={`w-16 h-16 mx-auto mb-4 ${
+                  dragActive ? "text-green-500" : "text-gray-400"
+                }`}
+              />
               <p className="text-lg font-medium text-gray-700 mb-2">
                 {file ? file.name : "Drag & drop your report here"}
               </p>
@@ -168,7 +191,9 @@ const UploadReportPage = () => {
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-gray-400 mt-4">Supported: PDF, JPG, PNG (Max 10MB)</p>
+              <p className="text-xs text-gray-400 mt-4">
+                Supported: PDF, JPG, PNG (Max 10MB)
+              </p>
             </div>
 
             {/* Error Message */}
@@ -183,7 +208,9 @@ const UploadReportPage = () => {
             {success && !loading && (
               <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                <p className="text-sm text-green-700">Report analyzed successfully!</p>
+                <p className="text-sm text-green-700">
+                  Report analyzed successfully!
+                </p>
               </div>
             )}
 
@@ -222,28 +249,28 @@ const UploadReportPage = () => {
         {/* Summary Section */}
         {summary && (
           <div className="mt-6 bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+                       {" "}
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6">
+                           {" "}
               <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-                <FileText className="w-6 h-6" />
-                AI Analysis Report
+                                <FileText className="w-6 h-6" />               
+                AI Analysis Report              {" "}
               </h3>
+                           {" "}
               <p className="text-green-50 text-sm mt-1">
-                Generated for: {file?.name}
+                                Generated for: {file?.name}             {" "}
               </p>
+                         {" "}
             </div>
+                       {" "}
             <div className="p-8">
-              <div className="prose max-w-none">
-                <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {summary}
-                </div>
-              </div>
-              <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  ⚠️ <strong>Disclaimer:</strong> This AI analysis is for informational purposes only. 
-                  Always consult your doctor before making any medical decisions.
-                </p>
-              </div>
+                           {" "}
+              {/* This DIV will now render the HTML returned by Gemini */}
+                           {" "}
+              <div dangerouslySetInnerHTML={{ __html: summary }} />             
+                         {" "}
             </div>
+                     {" "}
           </div>
         )}
 
