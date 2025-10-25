@@ -1,17 +1,14 @@
 import React from "react";
-import { Send, Loader2, Upload, AlertCircle } from "lucide-react";
+import { Send, Loader2, AlertCircle } from "lucide-react";
 
 const InputArea = ({
   prompt,
-  file,
   error,
   loading,
   textareaRef,
   setPrompt,
-  setFile,
   handleTextareaChange,
   handleTextSubmit,
-  handleFileUpload,
 }) => {
   return (
     <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_rgba(0,0,0,0.05)]">
@@ -22,6 +19,8 @@ const InputArea = ({
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
+
+        {/* Text Input Area */}
         <div className="bg-white rounded-xl border border-gray-300 shadow-sm">
           <div className="flex items-center p-2">
             <textarea
@@ -34,7 +33,7 @@ const InputArea = ({
                   handleTextSubmit(e);
                 }
               }}
-              placeholder="Ask me anything..."
+              placeholder="Ask me anything about your health or medical reports..."
               rows={1}
               disabled={loading}
               className={`flex-1 border-none outline-none resize-none text-sm text-gray-900 bg-transparent p-2 font-sans leading-relaxed min-h-[40px] max-h-[200px] ${
@@ -44,16 +43,23 @@ const InputArea = ({
             <button
               onClick={handleTextSubmit}
               disabled={loading || !prompt.trim()}
-              className={`flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg transition-opacity ${
-                loading || !prompt.trim() ? "opacity-40 cursor-not-allowed" : "opacity-100"
+              className={`flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg transition-all ${
+                loading || !prompt.trim() 
+                  ? "opacity-40 cursor-not-allowed" 
+                  : "opacity-100 hover:from-green-600 hover:to-green-700"
               }`}
             >
-              {loading ? <Loader2 className="w-5 h-5 text-white spin" /> : <Send className="w-5 h-5 text-white" />}
+              {loading ? (
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
+              ) : (
+                <Send className="w-5 h-5 text-white" />
+              )}
             </button>
           </div>
         </div>
+        
         <p className="text-xs text-gray-500 text-center mt-3">
-          HealthMate may produce inaccurate information. Please verify important details.
+          HealthMate may produce inaccurate information. Please verify important details with healthcare professionals.
         </p>
       </div>
     </div>

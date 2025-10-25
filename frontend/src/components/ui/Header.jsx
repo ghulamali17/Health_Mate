@@ -1,17 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Menu, LogOut, ChevronDown, HeartPulse } from "lucide-react";
+import { Loader2, Menu, LogOut, ChevronDown, HeartPulse, User, LayoutDashboard } from "lucide-react";
 import { useAuth } from "../../context/authContext";
+import useClickOutside from "../../hooks/useClickOutside";
 
 const Header = ({ user, loadingUser, toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { logout } = useAuth();
   const navigate = useNavigate();
+  
+  // Create ref for the dropdown container
+  const dropdownRef = useRef(null);
+
+  // Use the click outside hook
+  useClickOutside(dropdownRef, () => {
+    setIsDropdownOpen(false);
+  });
 
   const handleLogout = () => {
     logout();
     setIsDropdownOpen(false);
     navigate("/login");
+  };
+
+  const handleDropdownToggle = (e) => {
+    e.stopPropagation(); // Prevent immediate closing
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -43,13 +62,13 @@ const Header = ({ user, loadingUser, toggleSidebar }) => {
         </div>
 
         {/* Right Section */}
-        <div className="relative flex items-center gap-3">
+        <div className="relative flex items-center gap-3" ref={dropdownRef}>
           {loadingUser ? (
             <Loader2 className="w-6 h-6 text-green-600 animate-spin" />
           ) : user ? (
             <>
               <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                onClick={handleDropdownToggle}
                 className="flex items-center gap-2 focus:outline-none hover:bg-green-50 px-3 py-2 rounded-xl transition-all"
                 aria-expanded={isDropdownOpen}
               >
@@ -71,12 +90,26 @@ const Header = ({ user, loadingUser, toggleSidebar }) => {
 
               {/* Dropdown */}
               {isDropdownOpen && (
-                <div className="absolute  right-0 top-14 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn">
+                <div className="absolute right-0 top-14 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn z-50">
+                  <button
+                    onClick={() => handleNavigation("/")}
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-t-xl transition-colors"
+                  >
+                    <LayoutDashboard className="w-4 h-4 text-gray-600" />
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={() => handleNavigation("/")}
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                  >
+                    <User className="w-4 h-4 text-gray-600" />
+                    Profile
+                  </button>
                   <button
                     onClick={handleLogout}
-                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-t-xl"
+                    className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"
                   >
-                    <LogOut className="w-4 h-4 text-gray-600" />
+                    <LogOut className="w-4 h-4 text-red-600" />
                     Logout
                   </button>
                 </div>

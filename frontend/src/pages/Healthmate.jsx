@@ -19,8 +19,6 @@ import "./Styles.css";
 const Healthmate = () => {
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
-  const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [conversation, setConversation] = useState([]);
@@ -272,12 +270,9 @@ const Healthmate = () => {
         />
         <InputArea
           prompt={prompt}
-          file={file}
           error={error}
           loading={loading}
           textareaRef={textareaRef}
-          setPrompt={setPrompt}
-          setFile={setFile}
           handleTextareaChange={handleTextareaChange}
           handleTextSubmit={handleTextSubmit}
         />

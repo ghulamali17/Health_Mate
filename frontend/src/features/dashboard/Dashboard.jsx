@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { 
   Activity, FileText, MessageSquare, Plus, TrendingUp, 
   Heart, Calendar, Clock, ArrowRight, Upload, ChevronRight,
-  Droplet, Weight, Thermometer, BarChart3, User, Settings
+  Droplet, Weight, Thermometer, BarChart3, User, Settings,LogOut,LayoutDashboard
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useEffect } from "react";
+import { useAuth } from "../../context/authContext";
 
 const Dashboard = () => {
 
@@ -14,7 +15,14 @@ const Dashboard = () => {
   const [vitals, setVitals] = useState([]);
   const [loadingVitals, setLoadingVitals] = useState(false);
   const [loadingUser, setLoadingUser] = useState(false);
+   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+   const { logout } = useAuth();
 
+   const handleLogout = () => {
+    logout();
+    setIsDropdownOpen(false);
+    navigate("/login");
+  };
     // Fetch current user
     useEffect(() => {
       const fetchCurrentUser = async () => {
@@ -164,18 +172,49 @@ const fetchVitals = async () => {
               <p className="text-sm text-gray-500">Apki sehat, ek nazar mein</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Settings className="w-5 h-5 text-gray-600" />
-            </button>
-          <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-  <User className="w-4 h-4 text-gray-600" />
-  <span className="text-sm font-medium text-gray-700">
-    {loadingUser ? "Loading..." : user?.name || "Guest"}
-  </span>
+        <div className="flex items-center gap-3 relative">
+  <div className="relative hidden md:block">
+    <button 
+      onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+    >
+      <Settings className="w-5 h-5 text-gray-600" />
+    </button>
+    
+    {isDropdownOpen && (
+      <div className="absolute left-0 top-12 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn z-50">
+        <button
+          onClick={() => handleNavigation("/")}
+          className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-t-xl transition-colors"
+        >
+          <LayoutDashboard className="w-4 h-4 text-gray-600" />
+          Dashboard
+        </button>
+        <button
+          onClick={() => handleNavigation("/profile")}
+          className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+        >
+          <User className="w-4 h-4 text-gray-600" />
+          Profile
+        </button>
+        <button
+          onClick={handleLogout}
+          className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"
+        >
+          <LogOut className="w-4 h-4 text-red-600" />
+          Logout
+        </button>
+      </div>
+    )}
+  </div>
+  
+  <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
+    <User className="w-4 h-4 text-gray-600" />
+    <span className="text-sm font-medium text-gray-700">
+      {loadingUser ? "Loading..." : user?.name || "Guest"}
+    </span>
+  </div>
 </div>
-
-          </div>
         </div>
       </div>
 
