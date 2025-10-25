@@ -50,7 +50,7 @@ const Healthmate = () => {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("http://localhost:3001/api/users/current", {
+        const response = await axios.get("https://health-mate-qknk.vercel.app/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -102,7 +102,7 @@ const Healthmate = () => {
     if (!user || !sessionId) return;
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/chat/history/${user._id}/${sessionId}`
+        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${sessionId}`
       );
       setConversation(response.data.messages || []);
       
@@ -119,7 +119,7 @@ const Healthmate = () => {
   const saveChatMessage = async (message) => {
     if (!user || !sessionId) return;
     try {
-      await axios.post("http://localhost:3001/api/chat/save", {
+      await axios.post("https://health-mate-qknk.vercel.app/api/chat/save", {
         userId: user._id,
         sessionId,
         message,
@@ -134,7 +134,7 @@ const Healthmate = () => {
     setIsSidebarOpen(false);
     try {
       const response = await axios.get(
-        `http://localhost:3001/api/chat/history/${user._id}/${selectedSessionId}`
+        `https://health-mate-qknk.vercel.app/api/chat/history/${user._id}/${selectedSessionId}`
       );
       setConversation(response.data.messages || []);
       
@@ -200,7 +200,7 @@ const Healthmate = () => {
     setPrompt("");
 
     try {
-      const res = await fetch("http://localhost:3001/api/healthmate", {
+      const res = await fetch("https://health-mate-qknk.vercel.app/api/ai/healthmate", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: currentPrompt }),
@@ -221,7 +221,7 @@ const Healthmate = () => {
       await saveChatMessage(assistantMessage);
       await fetchSessions();
     } catch (err) {
-      const errorMsg = "Something went wrong. Check your backend or network.";
+      const errorMsg = "Something went wrong. Check yournetwork.";
       setError(errorMsg);
       const errorMessage = { 
         type: "error", 
@@ -235,7 +235,31 @@ const Healthmate = () => {
     } finally {
       setLoading(false);
     }
-  };
+
+    const summaryText = data.summary || data.error;
+    setSummary(summaryText);
+    
+    const summaryMessage = {
+      type: "assistant",
+      text: summaryText,
+      isSummary: true,
+      timestamp: new Date(),
+    };
+    setConversation((prev) => [...prev, summaryMessage]);
+    await saveChatMessage(summaryMessage);
+    await fetchSessions();
+  } catch (err) {
+    console.error("File upload error:", err);
+    const errorMsg = err.message || "File summarization failed.";
+    setError(errorMsg);
+    const errorMessage = { type: "error", text: errorMsg, timestamp: new Date() };
+    setConversation((prev) => [...prev, errorMessage]);
+    await saveChatMessage(errorMessage);
+  } finally {
+    setLoading(false);
+    setFile(null);
+  }
+};
 
   const handleTextareaChange = (e) => {
     setPrompt(e.target.value);
@@ -247,7 +271,7 @@ const Healthmate = () => {
 
   return (
     <div className="flex h-screen bg-gradient-to-b from-gray-50 to-white font-sans">
-      <ChatHistorySidebar
+      {/* <ChatHistorySidebar
         user={user}
         isSidebarOpen={isSidebarOpen}
         setIsSidebarOpen={setIsSidebarOpen}
@@ -255,7 +279,7 @@ const Healthmate = () => {
         deleteSession={deleteSession}
         startNewSession={startNewSession}
         loading={loading}
-      />
+      /> */}
       <div className="flex-1 flex flex-col">
         <Header
           user={user}
