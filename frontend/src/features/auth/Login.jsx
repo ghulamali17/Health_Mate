@@ -40,7 +40,7 @@ function Login() {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-qknk.vercel.app/api/users/current", {
+        const response = await axios.get("http://localhost:3001/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -60,7 +60,7 @@ function Login() {
     try {
       setLoadingSubmit(true);
       const response = await axios.post(
-        "https://health-mate-urpl.vercel.app/api/users/login",
+        "http://localhost:3001/api/users/login",
         {
           email,
           password,

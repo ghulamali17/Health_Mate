@@ -114,5 +114,5 @@ module.exports = {
   getChatHistory,
   getAllSessions,
   deleteSession,
-  clearSession,
+  clearSession
 };

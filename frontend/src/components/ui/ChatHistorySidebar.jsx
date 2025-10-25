@@ -78,7 +78,7 @@ const ChatHistorySidebar = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteSession(ssession.sessionId);
+                    deleteSession(session.sessionId);
                   }}
                   className="p-1 hover:bg-red-50 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={sessionLoading || loading}
