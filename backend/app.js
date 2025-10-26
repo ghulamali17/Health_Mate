@@ -11,28 +11,29 @@ const summarizeRouter = require("./routes/summarizeRoutes");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS Configuration 
-const allowedOrigins = [
-  "https://health-mate-pearl.vercel.app",
-  "http://localhost:5173",
-  "https://your-frontend-domain.vercel.app" 
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
+// CORS Configuration
+app.use(cors({
+  origin: [
+    "https://health-mate-pearl.vercel.app",
+    "http://localhost:5173"
+  ],
+  credentials: true
+}));
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin) return callback(null, true);
       
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log(`Blocked by CORS: ${origin}`);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+//       if (allowedOrigins.includes(origin)) {
+//         callback(null, true);
+//       } else {
+//         console.log(`Blocked by CORS: ${origin}`);
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true,
+//   })
+// );
 
 app.use(express.json());
 app.use(cookieParser());
