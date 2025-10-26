@@ -34,7 +34,7 @@ function AllVitals() {
       const token = localStorage.getItem("pos-token");
       if (!token) return;
       
-      const response = await fetch("http://localhost:3001/api/users/current", {
+      const response = await fetch("https://health-mate-3x6x.vercel.app/api/users/current", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -53,7 +53,7 @@ const fetchVitals = async () => {
       return;
     }
 
-    const response = await fetch("http://localhost:3001/api/vitals/useritems", {
+    const response = await fetch("https://health-mate-3x6x.vercel.app/api/vitals/useritems", {
       headers: { Authorization: `Bearer ${token}` },
     });
     
@@ -97,7 +97,7 @@ const fetchVitals = async () => {
     
     try {
       const token = localStorage.getItem("pos-token");
-      await fetch(`http://localhost:3001/api/vitals/deleteitem/${id}`, {
+      await fetch(`https://health-mate-3x6x.vercel.app/api/vitals/deleteitem/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

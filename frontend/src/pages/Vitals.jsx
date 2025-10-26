@@ -80,7 +80,7 @@ if (!token) return;
 
 try {
   const res = await axios.post(
-    "http://localhost:3001/api/vitals/createitem",
+    "https://health-mate-3x6x.vercel.app/api/vitals/createitem",
     payload,
     {
       headers: {

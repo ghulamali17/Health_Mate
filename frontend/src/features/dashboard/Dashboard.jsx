@@ -75,7 +75,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("http://localhost:3001/api/users/current", {
+        const response = await axios.get("https://health-mate-3x6x.vercel.app/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -101,7 +101,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("pos-token");
       if (!token) return;
 
-      const res = await axios.get("http://localhost:3001/api/vitals/useritems", {
+      const res = await axios.get("https://health-mate-3x6x.vercel.app/api/vitals/useritems", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -121,7 +121,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("pos-token");
       if (!token) return toast.error("Unauthorized request. Please login again.");
 
-      await axios.delete(`http://localhost:3001/api/vitals/deleteitem/${id}`, {
+      await axios.delete(`https://health-mate-3x6x.vercel.app/api/vitals/deleteitem/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
