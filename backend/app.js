@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3001;
 
 // CORS Configuration 
 const allowedOrigins = [
-  "https://health-mate-dcv3.vercel.app",
+  "https://health-mate-pearl.vercel.app",
   "http://localhost:5173",
   "https://your-frontend-domain.vercel.app" 
 ];
