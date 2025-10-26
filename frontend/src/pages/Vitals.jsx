@@ -35,6 +35,7 @@ const AddVitals = () => {
     }
   });
   const { user } = useAuth();
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const onSubmit = async (data) => {
     const hasAnyVital =
@@ -80,7 +81,7 @@ if (!token) return;
 
 try {
   const res = await axios.post(
-    "https://health-mate-s6gc.vercel.app/api/vitals/createitem",
+    `${API_URL}/api/vitals/createitem`,
     payload,
     {
       headers: {

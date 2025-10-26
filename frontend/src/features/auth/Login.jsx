@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
-import axios from "axios";
+import api from "../../config/api"; 
 import { useAuth } from "../../context/authContext";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Header from "../../components/ui/Header";
-import ChatHistorySidebar from "../../components/ui/ChatHistorySidebar";
-import "./styles.css";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-
 
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email").required("Email is required"),
@@ -23,7 +20,7 @@ const schema = yup.object().shape({
 
 function Login() {
   const navigate = useNavigate();
-  const { login, user: authUser } = useAuth();
+  const { login } = useAuth();
   const [user, setUser] = useState(null);
   const [loadingUser, setLoadingUser] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
@@ -41,9 +38,7 @@ function Login() {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-s6gc.vercel.app/api/users/current", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
         console.error("Failed to fetch user:", err.response?.data || err.message);
@@ -60,13 +55,10 @@ function Login() {
 
     try {
       setLoadingSubmit(true);
-      const response = await axios.post(
-        "https://health-mate-s6gc.vercel.app/api/users/login",
-        {
-          email,
-          password,
-        }
-      );
+      const response = await api.post("/api/users/login", {
+        email,
+        password,
+      });
 
       const { message, token, user } = response.data;
 
@@ -82,7 +74,15 @@ function Login() {
       }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
-      toast.error("Something went wrong");
+      
+      // Better error handling
+      if (error.response?.status === 401) {
+        toast.error("Invalid credentials");
+      } else if (error.code === 'ERR_NETWORK') {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error(error.response?.data?.error || "Something went wrong");
+      }
     } finally {
       setLoadingSubmit(false);
     }

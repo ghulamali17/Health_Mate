@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 function AllVitals() {
   const [vitals, setVitals] = useState([]);
   const [filteredVitals, setFilteredVitals] = useState([]);
@@ -34,7 +36,7 @@ function AllVitals() {
       const token = localStorage.getItem("pos-token");
       if (!token) return;
       
-      const response = await fetch("https://health-mate-s6gc.vercel.app/api/users/current", {
+      const response = await fetch(`${API_URL}/api/users/current`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -44,39 +46,39 @@ function AllVitals() {
     }
   };
 
-const fetchVitals = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem("pos-token");
-    if (!token) {
-      toast.error("⚠️ Please log in again.");
-      return;
+  const fetchVitals = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("pos-token");
+      if (!token) {
+        toast.error("⚠️ Please log in again.");
+        return;
+      }
+
+      const response = await fetch(`${API_URL}/api/vitals/useritems`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log("Received vitals data:", data); 
+
+      const sorted = data.sort(
+        (a, b) => new Date(b.measuredAt) - new Date(a.measuredAt)
+      );
+
+      setVitals(sorted);
+      setFilteredVitals(sorted);
+    } catch (err) {
+      console.error("Error fetching vitals:", err);
+      toast.error("Failed to fetch vitals. Check console for details.");
+    } finally {
+      setLoading(false);
     }
-
-    const response = await fetch("https://health-mate-s6gc.vercel.app/api/vitals/useritems", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    console.log("Received vitals data:", data); 
-
-    const sorted = data.sort(
-      (a, b) => new Date(b.measuredAt) - new Date(a.measuredAt)
-    );
-
-    setVitals(sorted);
-    setFilteredVitals(sorted);
-  } catch (err) {
-    console.error("Error fetching vitals:", err);
-    toast.error("Failed to fetch vitals. Check console for details.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleSearch = (e) => {
     const q = e.target.value.toLowerCase();
@@ -97,12 +99,13 @@ const fetchVitals = async () => {
     
     try {
       const token = localStorage.getItem("pos-token");
-      await fetch(`https://health-mate-s6gc.vercel.app/api/vitals/deleteitem/${id}`, {
+      await fetch(`${API_URL}/api/vitals/deleteitem/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
       setVitals((prev) => prev.filter((v) => v._id !== id));
       setFilteredVitals((prev) => prev.filter((v) => v._id !== id));
+      toast.success("Vital record deleted successfully");
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to delete vital record");

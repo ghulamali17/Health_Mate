@@ -1,113 +1,176 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { 
   Activity, FileText, MessageSquare, Plus, TrendingUp, 
   Heart, Calendar, Clock, ArrowRight, Upload, ChevronRight,
-  Droplet, Weight, Thermometer, BarChart3, User, Settings,LogOut,LayoutDashboard
+  Droplet, Weight, Thermometer, BarChart3, User, Settings, LogOut, LayoutDashboard
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useEffect } from "react";
+import api from "../../config/api"; // Import centralized API
 import { useAuth } from "../../context/authContext";
 import { toast } from "react-toastify";
+import useClickOutside from "../../hooks/useClickOutside";
 
 const Dashboard = () => {
-
-  const[user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [vitals, setVitals] = useState([]);
   const [loadingVitals, setLoadingVitals] = useState(false);
   const [loadingUser, setLoadingUser] = useState(false);
-   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-   const { logout } = useAuth();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
-   const handleLogout = () => {
+  // Stats state with real data
+  const [stats, setStats] = useState({
+    totalReports: 12,
+    totalVitals: 0,
+    totalChats: 0, 
+    lastVital: {
+      bp: "--/--",
+      sugar: "--",
+      date: "No data"
+    }
+  });
+
+  // Update stats when vitals change
+  useEffect(() => {
+    if (vitals.length === 0) return;
+
+    const lastVital = vitals[vitals.length - 1];
+    setStats(prev => ({
+      ...prev,
+      totalVitals: vitals.length,
+      lastVital: {
+        bp: lastVital.bloodPressure?.systolic && lastVital.bloodPressure?.diastolic
+          ? `${lastVital.bloodPressure.systolic}/${lastVital.bloodPressure.diastolic}`
+          : "--/--",
+        sugar: lastVital.bloodSugar || "--",
+        date: lastVital.measuredAt 
+          ? new Date(lastVital.measuredAt).toLocaleDateString()
+          : "No data"
+      }
+    }));
+  }, [vitals]);
+
+  const handleLogout = () => {
     logout();
+    localStorage.removeItem("pos-token");
     setIsDropdownOpen(false);
+    toast.success("Logged out successfully");
     navigate("/login");
   };
-    // Fetch current user
-    useEffect(() => {
-      const fetchCurrentUser = async () => {
-        try {
-          setLoadingUser(true);
-          const token = localStorage.getItem("pos-token");
-          if (!token) return;
-  
-          const response = await axios.get("https://health-mate-s6gc.vercel.app/api/users/current", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setUser(response.data);
-        } catch (err) {
-          console.error("Failed to fetch user:", err.response?.data || err.message);
-        } finally {
-          setLoadingUser(false);
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    setIsDropdownOpen(false);
+  };
+
+  const dropdownRef = useRef(null);
+
+  // Use the click outside hook
+  useClickOutside(dropdownRef, () => {
+    setIsDropdownOpen(false);
+  });
+
+  // Fetch current user
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        setLoadingUser(true);
+        const token = localStorage.getItem("pos-token");
+        if (!token) {
+          navigate("/login");
+          return;
         }
-      };
-  
-      fetchCurrentUser();
-    }, []);
 
+        const response = await api.get("/api/users/current");
+        setUser(response.data);
+      } catch (err) {
+        console.error("Failed to fetch user:", err.response?.data || err.message);
+        
+        if (err.response?.status === 401) {
+          toast.error("Session expired. Please login again.");
+          localStorage.removeItem("pos-token");
+          navigate("/login");
+        }
+      } finally {
+        setLoadingUser(false);
+      }
+    };
 
-//  Fetch all vitals on load
-useEffect(() => {
-  fetchVitals();
-}, []);
+    fetchCurrentUser();
+  }, [navigate]);
 
-//  Fetch vitals 
-const fetchVitals = async () => {
-  try {
-    setLoadingVitals(true);
-    const token = localStorage.getItem("pos-token");
-    if (!token) {
-      // alert("You are not logged in. Please log in again.");
+  // Fetch all vitals on load
+  useEffect(() => {
+    fetchVitals();
+  }, []);
+
+  // Fetch vitals 
+  const fetchVitals = async () => {
+    try {
+      setLoadingVitals(true);
+      const token = localStorage.getItem("pos-token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const res = await api.get("/api/vitals/useritems");
+      setVitals(res.data);
+    } catch (err) {
+      console.error("Fetch vitals error:", err.response?.data || err.message);
+      
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("pos-token");
+        navigate("/login");
+      } else if (err.code === 'ERR_NETWORK') {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error("Failed to fetch vitals");
+      }
+    } finally {
+      setLoadingVitals(false);
+    }
+  };
+
+  // Delete vital
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this vital record?")) {
       return;
     }
 
-    const res = await axios.get("https://health-mate-s6gc.vercel.app/api/vitals/getitems", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setVitals(res.data);
-  } catch (err) {
-    console.error("Fetch vitals error:", err.response?.data || err.message);
-  } finally {
-    setLoadingVitals(false);
-  }
-};
-
-
-   // ❌ Delete vital
-  const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem("pos-token");
-      if (!token) return toast.error("Unauthorized request. Please login again.");
+      if (!token) {
+        toast.error("Unauthorized request. Please login again.");
+        navigate("/login");
+        return;
+      }
 
-      await axios.delete(`https://health-mate-s6gc.vercel.app/api/vitals/deleteitem/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      await api.delete(`/api/vitals/deleteitem/${id}`);
+      
       setVitals((prev) => prev.filter((v) => v._id !== id));
-      console.log("Vital deleted successfully");
+      toast.success("Vital record deleted successfully");
     } catch (error) {
       console.error("Delete error:", error.response?.data || error.message);
+      
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("pos-token");
+        navigate("/login");
+      } else if (error.response?.status === 404) {
+        toast.error("Vital record not found");
+      } else if (error.code === 'ERR_NETWORK') {
+        toast.error("Network error. Please check your connection.");
+      } else {
+        toast.error(error.response?.data?.error || "Failed to delete vital record");
+      }
     }
   };
 
-
-  // Sample data - Replace with real data from your backend
-  const [stats] = useState({
-    totalReports: 12,
-    totalVitals: 24,
-    totalChats: 8,
-    lastVital: {
-      bp: "120/80",
-      sugar: "95",
-      date: "24 Oct 2025"
-    }
-  });
-  const navigate = useNavigate();
-
+  // Sample data for reports
   const [recentReports] = useState([
     {
       id: 1,
@@ -132,32 +195,6 @@ const fetchVitals = async () => {
     }
   ]);
 
-  const [recentVitals] = useState([
-    {
-      id: 1,
-      date: "24 Oct 2025",
-      time: "09:30 AM",
-      bp: "120/80",
-      sugar: "95",
-      weight: "72"
-    },
-    {
-      id: 2,
-      date: "23 Oct 2025",
-      time: "08:45 AM",
-      bp: "118/78",
-      sugar: "92",
-      weight: "72"
-    },
-    {
-      id: 3,
-      date: "22 Oct 2025",
-      time: "09:15 AM",
-      bp: "122/82",
-      sugar: "98",
-      weight: "72.5"
-    }
-  ]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">

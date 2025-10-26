@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 const UploadReportPage = () => {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +38,7 @@ const UploadReportPage = () => {
         if (!token) return;
 
         const response = await axios.get(
-          "https://health-mate-s6gc.vercel.app/api/users/current",
+          `${API_URL}/api/users/current`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -91,7 +92,7 @@ const UploadReportPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("https://health-mate-s6gc.vercel.app/api/summarize", {
+      const res = await fetch(`${API_URL}/api/summarize`, {
         method: "POST",
         body: formData,
       });
