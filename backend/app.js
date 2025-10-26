@@ -10,30 +10,43 @@ const summarizeRouter = require("./routes/summarizeRoutes");
 
 const app = express();
 
-// CORS Configuration - MUST be before other middleware
-const corsOptions = {
-  origin: function (origin, callback) {
-    const allowedOrigins = [
+// CORS Configuration 
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     const allowedOrigins = [
+//       "https://health-mate-pearl.vercel.app",
+//       "https://health-mate-s6gc.vercel.app", 
+//       "http://localhost:5173"
+//     ];
+    
+//     if (!origin) return callback(null, true);
+    
+//     if (allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true,
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   exposedHeaders: ['set-cookie']
+// };
+
+// app.use(cors(corsOptions));
+
+app.use(
+  cors({
+    origin: [
       "https://health-mate-pearl.vercel.app",
       "https://health-mate-s6gc.vercel.app", 
       "http://localhost:5173"
-    ];
-    
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  exposedHeaders: ['set-cookie']
-};
-
-app.use(cors(corsOptions));
+    ],
+    credentials: true,
+  })
+);
+app.use(express.json());
+app.use(cookieParser());
 
 // Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
