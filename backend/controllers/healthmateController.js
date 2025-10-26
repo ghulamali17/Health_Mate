@@ -8,9 +8,37 @@ const ai = new GoogleGenAI({
 // HealthMate Gemini controller
 const healthmateChat = async (req, res) => {
   try {
-    const userPrompt = req.body.prompt || "Hello from HealthMate AI Assistant!";
+    // Validate API key
+    if (!process.env.GOOGLE_API_KEY) {
+      console.error("GOOGLE_API_KEY is not set");
+      return res.status(500).json({ 
+        error: "AI service configuration error. Please contact support." 
+      });
+    }
+
+    const userPrompt = req.body.prompt?.trim() || "Hello from HealthMate AI Assistant!";
     const userVitals = req.body.vitals || null;
     const reportContext = req.body.reportContext || null;
+
+    // Validate user prompt
+    if (!userPrompt || userPrompt.length === 0) {
+      return res.status(400).json({ 
+        error: "Please provide a question or message" 
+      });
+    }
+
+    // Limit prompt length
+    if (userPrompt.length > 5000) {
+      return res.status(400).json({ 
+        error: "Message is too long. Please keep it under 5000 characters." 
+      });
+    }
+
+    console.log("HealthMate chat request:", {
+      promptLength: userPrompt.length,
+      hasVitals: !!userVitals,
+      hasReportContext: !!reportContext
+    });
 
     const prompt = `
 You are **HealthMate** – Sehat ka Smart Dost 💚  
@@ -51,17 +79,50 @@ ${userVitals ? `Current Vitals: ${JSON.stringify(userVitals)}` : 'No vitals data
 Respond now:
 `;
 
+    console.log("Sending request to Gemini...");
+
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
     });
 
+    if (!response || !response.text) {
+      throw new Error("No response received from AI service");
+    }
+
+    console.log("HealthMate response generated successfully");
     res.json({ text: response.text });
+
   } catch (error) {
-    console.error("Gemini API error:", error);
+    console.error("HealthMate chat error:", error);
+    
+    // Handle specific error types
+    if (error.message?.includes("API key")) {
+      return res.status(500).json({
+        error: "AI service configuration error",
+        details: "Please contact support"
+      });
+    }
+    
+    if (error.message?.includes("quota") || error.message?.includes("rate limit")) {
+      return res.status(429).json({
+        error: "Service temporarily unavailable",
+        details: "Our AI is busy right now. Please try again in a few moments."
+      });
+    }
+
+    if (error.message?.includes("safety") || error.message?.includes("blocked")) {
+      return res.status(400).json({
+        error: "Unable to process request",
+        details: "Your message couldn't be processed. Please rephrase and try again."
+      });
+    }
+    
     res.status(500).json({
       error: "Something went wrong",
-      details: error.message,
+      details: process.env.NODE_ENV === 'production' 
+        ? "Please try again later" 
+        : error.message
     });
   }
 };

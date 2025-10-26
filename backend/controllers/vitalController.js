@@ -2,11 +2,13 @@ const itemModel = require("../models/Vital");
 const multer = require("multer");
 const cloudinary = require("../utils/cloudinaryConfig");
 const upload = require("../middlewares/multerMiddleware");
-
+const connectDB = require("../connection");
 
 // create item
 const createItem = async (req, res) => {
   try {
+    await connectDB();
+
     const item = await itemModel.create({
       ...req.body,
       user: req.user._id,
@@ -21,9 +23,12 @@ const createItem = async (req, res) => {
 // get items
 const getItems = async (req, res) => {
   try {
+    await connectDB();
+    
     const items = await itemModel.find();
     res.json(items);
   } catch (err) {
+    console.error("Get items error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -34,6 +39,8 @@ const updateItem = async (req, res) => {
   const { title, price, description } = req.body;
 
   try {
+    await connectDB();
+    
     const updatedItem = await itemModel.findByIdAndUpdate(
       id,
       { title, price, description },
@@ -55,9 +62,17 @@ const updateItem = async (req, res) => {
 const getItemsByUserId = async (req, res) => {
   const { id } = req.params;
   try {
+    await connectDB(); 
+    
     const items = await itemModel.findById({ _id: id });
+    
+    if (!items) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    
     res.json(items);
   } catch (err) {
+    console.error("Get item by ID error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -65,10 +80,13 @@ const getItemsByUserId = async (req, res) => {
 // current user
 const getItemsByCurrentUser = async (req, res) => {
   try {
-    //Find items where item.user matches logged-in user
+    await connectDB();
+
+    //Find items by current user
     const items = await itemModel.find({ user: req.user._id });
     res.json(items);
   } catch (err) {
+    console.error("Get current user items error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -77,12 +95,17 @@ const getItemsByCurrentUser = async (req, res) => {
 const deleteItem = async (req, res) => {
   const { id } = req.params;
   try {
+    await connectDB();
+
     const deletedItem = await itemModel.findByIdAndDelete(id);
+    
     if (!deletedItem) {
       return res.status(404).json({ error: "Item not found" });
     }
+    
     res.status(200).json({ message: "Item deleted successfully", deletedItem });
   } catch (err) {
+    console.error("Delete item error:", err.message);
     res.status(500).json({ error: err.message });
   }
 };
@@ -91,6 +114,8 @@ const deleteItem = async (req, res) => {
 const searchItems = async (req, res) => {
   const { query } = req.query;
   try {
+    await connectDB(); 
+    
     const items = await itemModel.find({
       $or: [
         { title: { $regex: query, $options: "i" } },
@@ -105,47 +130,39 @@ const searchItems = async (req, res) => {
   }
 };
 
-// upload api multer
-
-// const storage=multer.diskStorage({
-//   destination: function(req,file,cb){
-//     return cb(null, "./public/images")
-//   },
-//   filename: function(req,file,cb){
-//     return cb(null,`${Date.now()}_${file.originalname}`)
-//   }
-// })
-
-// const upload=multer({storage})
-
-// const uploadFile = async (req, res) => {
-//   try {
-//     res.status(200).json({
-//       message: "File uploaded successfully",
-//       filename: req.file.filename,
-//       path: `/images/${req.file.filename}`,
-//     });
-//   } catch (err) {
-//     res.status(500).json({ error: "Upload failed" });
-//   }
-// };
-
-// upload cloudinary_js_config
+// upload cloudinary
 const uploadFileWithCloudinary = async (req, res) => {
-  cloudinary.uploader.upload(req.file.path, (err, result) => {
-    if (err) {
-      console.log(err);
-      return res.status(500).json({
+  try {
+    if (!req.file) {
+      return res.status(400).json({
         success: false,
-        message: "Error",
+        message: "No file uploaded",
       });
     }
-    res.status(200).json({
-      success: true,
-      message: "Uploaded",
-      data: result,
+
+    cloudinary.uploader.upload(req.file.path, (err, result) => {
+      if (err) {
+        console.error("Cloudinary upload error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Upload failed",
+          error: err.message,
+        });
+      }
+      res.status(200).json({
+        success: true,
+        message: "Uploaded successfully",
+        data: result,
+      });
     });
-  });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Upload failed",
+      error: err.message,
+    });
+  }
 };
 
 module.exports = {

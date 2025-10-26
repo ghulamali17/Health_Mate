@@ -13,6 +13,7 @@ import UploadReportPage from "../pages/Summarize";
 import AllVitals from "../pages/AllVitals";
 import About from "../pages/About";
 import HealthTips from "../pages/HealthTips";
+import Profile from "../pages/Profile";
 
 const routes = [
   {
@@ -38,7 +39,7 @@ const routes = [
   { path: "/add-vitals", element: <AddVitals /> },
   { path: "/summarize", element: <UploadReportPage /> },
   { path: "/health-tips", element: <HealthTips /> },
-  { path: "/all-vitals", element: <AllVitals /> },
+  { path: "/profile", element: <Profile /> },
 
   { path: "/about", element: <About /> },
   { path: "/unauthorized", element: <Unauthorized /> },
