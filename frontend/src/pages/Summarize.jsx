@@ -37,7 +37,7 @@ const UploadReportPage = () => {
         if (!token) return;
 
         const response = await axios.get(
-          "https://health-mate-3x6x.vercel.app/api/users/current",
+          "https://health-mate-s6gc.vercel.app/api/users/current",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -91,7 +91,7 @@ const UploadReportPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("https://health-mate-3x6x.vercel.app/api/summarize", {
+      const res = await fetch("https://health-mate-s6gc.vercel.app/api/summarize", {
         method: "POST",
         body: formData,
       });

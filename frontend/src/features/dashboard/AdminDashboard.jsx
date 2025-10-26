@@ -32,7 +32,7 @@ const Dashboard = () => {
           const token = localStorage.getItem("pos-token");
           if (!token) return;
   
-          const response = await axios.get("https://health-mate-3x6x.vercel.app/api/users/current", {
+          const response = await axios.get("https://health-mate-s6gc.vercel.app/api/users/current", {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
@@ -62,7 +62,7 @@ const fetchVitals = async () => {
       return;
     }
 
-    const res = await axios.get("https://health-mate-3x6x.vercel.app/api/vitals/getitems", {
+    const res = await axios.get("https://health-mate-s6gc.vercel.app/api/vitals/getitems", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -83,7 +83,7 @@ const fetchVitals = async () => {
       const token = localStorage.getItem("pos-token");
       if (!token) return toast.error("Unauthorized request. Please login again.");
 
-      await axios.delete(`https://health-mate-3x6x.vercel.app/api/vitals/deleteitem/${id}`, {
+      await axios.delete(`https://health-mate-s6gc.vercel.app/api/vitals/deleteitem/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

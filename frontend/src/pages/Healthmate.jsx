@@ -50,7 +50,7 @@ const Healthmate = () => {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("https://health-mate-3x6x.vercel.app/api/users/current", {
+        const response = await axios.get("https://health-mate-s6gc.vercel.app/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -68,7 +68,7 @@ const Healthmate = () => {
     if (!user) return;
     try {
       dispatch(setSessionLoading(true));
-      const response = await axios.get(`https://health-mate-3x6x.vercel.app/api/chat/sessions/${user._id}`);
+      const response = await axios.get(`https://health-mate-s6gc.vercel.app/api/chat/sessions/${user._id}`);
       dispatch(setSessions(response.data.sessions || []));
     } catch (err) {
       console.error("Failed to fetch sessions:", err);
@@ -81,12 +81,12 @@ const Healthmate = () => {
     if (!user || !sessionId) return;
     try {
       const response = await axios.get(
-        `https://health-mate-3x6x.vercel.app/api/chat/history/${user._id}/${sessionId}`
+        `https://health-mate-s6gc.vercel.app/api/chat/history/${user._id}/${sessionId}`
       );
       setConversation(response.data.messages || []);
       
       // Get fresh sessions state
-      const currentSessionsResponse = await axios.get(`https://health-mate-3x6x.vercel.app/api/chat/sessions/${user._id}`);
+      const currentSessionsResponse = await axios.get(`https://health-mate-s6gc.vercel.app/api/chat/sessions/${user._id}`);
       const currentSession = currentSessionsResponse.data.sessions?.find(
         session => session.sessionId === sessionId
       );
@@ -120,7 +120,7 @@ const Healthmate = () => {
   const saveChatMessage = async (message) => {
     if (!user || !sessionId) return;
     try {
-      await axios.post("https://health-mate-3x6x.vercel.app/api/chat/save", {
+      await axios.post("https://health-mate-s6gc.vercel.app/api/chat/save", {
         userId: user._id,
         sessionId,
         message,
@@ -135,7 +135,7 @@ const Healthmate = () => {
     setIsSidebarOpen(false);
     try {
       const response = await axios.get(
-        `https://health-mate-3x6x.vercel.app/api/chat/history/${user._id}/${selectedSessionId}`
+        `https://health-mate-s6gc.vercel.app/api/chat/history/${user._id}/${selectedSessionId}`
       );
       setConversation(response.data.messages || []);
       
@@ -168,7 +168,7 @@ const Healthmate = () => {
   const deleteSession = async (sessionIdToDelete) => {
     if (!user) return;
     try {
-      await axios.delete(`https://health-mate-3x6x.vercel.app/api/chat/session/${user._id}/${sessionIdToDelete}`);
+      await axios.delete(`https://health-mate-s6gc.vercel.app/api/chat/session/${user._id}/${sessionIdToDelete}`);
       dispatch(removeSession(sessionIdToDelete));
       
       if (sessionIdToDelete === sessionId) {
@@ -200,7 +200,7 @@ const Healthmate = () => {
   setPrompt("");
 
   try {
-    const res = await fetch("https://health-mate-3x6x.vercel.app/api/healthmate", { 
+    const res = await fetch("https://health-mate-s6gc.vercel.app/api/healthmate", { 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: currentPrompt }),
