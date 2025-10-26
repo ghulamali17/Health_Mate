@@ -1,12 +1,13 @@
 const app = require("./app");
 
-const PORT = process.env.PORT || 3001;
+module.exports = app;
 
-// Start server only in local development
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  const PORT = process.env.PORT || 3001;
   app.listen(PORT, () => {
     console.log(`✅ Server is running at http://localhost:${PORT}`);
     console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    // console.log(`🌐 Allowed CORS origins:`, allowedOrigins);
   });
+} else {
+  console.log(`🚀 Server running in production mode on Vercel`);
 }

@@ -11,18 +11,22 @@ const summarizeRouter = require("./routes/summarizeRoutes");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS Configuration
+// CORS Configuration 
 const allowedOrigins = [
   "https://health-mate-dcv3.vercel.app",
-  "http://localhost:5173/",
+  "http://localhost:5173",
+  "https://your-frontend-domain.vercel.app" 
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.log(`Blocked by CORS: ${origin}`);
         callback(new Error("Not allowed by CORS"));
       }
     },
@@ -49,6 +53,7 @@ app.get("/", (req, res) => {
   res.json({
     message: "HealthMate Backend API is running!",
     version: "1.0.0",
+    environment: process.env.NODE_ENV || 'development',
     endpoints: {
       healthmate: "/api/healthmate",
       summarize: "/api/summarize",
@@ -59,6 +64,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
+// app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
 module.exports = app;
