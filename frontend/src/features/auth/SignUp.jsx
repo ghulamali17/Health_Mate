@@ -46,7 +46,7 @@ function Signup() {
         const token = localStorage.getItem("pos-token");
         if (!token) return;
 
-        const response = await axios.get("http://localhost:3001/api/users/current", {
+        const response = await axios.get("https://health-mate-3x6x.vercel.app/api/users/current", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data);
@@ -84,7 +84,7 @@ function Signup() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/users/register",
+        "https://health-mate-3x6x.vercel.app/api/users/register",
         {
           name: fullName,
           email,
