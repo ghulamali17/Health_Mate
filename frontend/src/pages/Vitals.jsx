@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/authContext";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 const AddVitals = () => {
   const {
     register,
@@ -35,6 +36,7 @@ const AddVitals = () => {
     }
   });
   const { user } = useAuth();
+  const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   const onSubmit = async (data) => {
@@ -106,7 +108,7 @@ try {
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="mb-4">
-          <button className="flex items-center text-gray-600 hover:text-gray-900 mb-3 transition-colors">
+          <button onClick={() => navigate("/")} className="flex cursor-pointer items-center text-gray-600 hover:text-gray-900 mb-3 transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             <span className="text-sm font-medium">Back to Dashboard</span>
           </button>

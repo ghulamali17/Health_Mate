@@ -10,18 +10,42 @@ const aiController = {
   // HealthMate AI Chat
   healthMate: async (req, res) => {
     try {
+      // Validate API key first
+      if (!process.env.GOOGLE_API_KEY) {
+        console.error("GOOGLE_API_KEY is not set");
+        return res.status(500).json({
+          success: false,
+          error: "AI service configuration error. Please contact support."
+        });
+      }
+
       const { prompt, vitals, reportContext } = req.body;
-      const userPrompt = prompt || "Hello from HealthMate AI Assistant!";
+      const userPrompt = prompt?.trim() || "Hello from HealthMate AI Assistant!";
       const userVitals = vitals || null;
       const userReportContext = reportContext || null;
 
-      // Validate prompt length
-      if (userPrompt.length > 1000) {
+      // Validate prompt
+      if (!userPrompt || userPrompt.length === 0) {
         return res.status(400).json({
-          error: "Prompt too long",
-          details: "Please keep your prompt under 1000 characters"
+          success: false,
+          error: "Please provide a message or question"
         });
       }
+
+      // Validate prompt length
+      if (userPrompt.length > 2000) {
+        return res.status(400).json({
+          success: false,
+          error: "Message too long",
+          details: "Please keep your message under 2000 characters"
+        });
+      }
+
+      console.log("HealthMate chat request:", {
+        promptLength: userPrompt.length,
+        hasVitals: !!userVitals,
+        hasReportContext: !!userReportContext
+      });
 
 const healthPrompt = `
 You are **HealthMate** – Sehat ka Smart Dost 💚  
@@ -80,6 +104,10 @@ Please provide your HealthMate response:
         contents: healthPrompt,
       });
 
+      if (!response || !response.text) {
+        throw new Error("No response received from AI service");
+      }
+
       console.log("Chat response received successfully");
       res.json({ 
         success: true,
@@ -88,23 +116,34 @@ Please provide your HealthMate response:
       });
       
     } catch (error) {
-      console.error("Gemini API error:", error);
+      console.error("HealthMate chat error:", error);
       
       if (error.message?.includes('API_KEY') || error.message?.includes('authentication')) {
         return res.status(500).json({
-          error: "Authentication failed",
-          details: "Please check your Google API key configuration"
+          success: false,
+          error: "AI service authentication failed",
+          details: "Please contact support"
         });
       }
       
       if (error.message?.includes('quota') || error.message?.includes('rate limit')) {
         return res.status(429).json({
+          success: false,
           error: "Service temporarily unavailable",
-          details: "API quota exceeded. Please try again later."
+          details: "Our AI is busy. Please try again in a few moments."
+        });
+      }
+
+      if (error.message?.includes('safety') || error.message?.includes('blocked')) {
+        return res.status(400).json({
+          success: false,
+          error: "Unable to process request",
+          details: "Please rephrase your question and try again."
         });
       }
       
       res.status(500).json({
+        success: false,
         error: "AI service temporarily unavailable",
         details: process.env.NODE_ENV === 'production' ? "Please try again later" : error.message
       });
@@ -120,6 +159,15 @@ Please provide your HealthMate response:
     console.log("File received:", req.file ? `Yes - ${req.file.originalname} (${req.file.size} bytes)` : 'No file');
 
     try {
+      // Validate API key first
+      if (!process.env.GOOGLE_API_KEY) {
+        console.error("GOOGLE_API_KEY is not set");
+        return res.status(500).json({
+          success: false,
+          error: "AI service configuration error. Please contact support."
+        });
+      }
+
       if (!req.file) {
         console.log("❌ No file uploaded");
         return res.status(400).json({ 
@@ -294,6 +342,10 @@ Now provide your HealthMate analysis:
         contents: summaryPrompt,
       });
 
+      if (!response || !response.text) {
+        throw new Error("No response received from AI service");
+      }
+
       console.log("✅ Summarization successful, response length:", response.text?.length || 0);
 
       res.json({ 
@@ -354,6 +406,16 @@ Now provide your HealthMate analysis:
   // Health check endpoint for AI services
   healthCheck: async (req, res) => {
     try {
+      if (!process.env.GOOGLE_API_KEY) {
+        return res.status(503).json({
+          success: false,
+          message: "AI services are unavailable",
+          geminiStatus: "not configured",
+          error: "GOOGLE_API_KEY not set",
+          timestamp: new Date().toISOString()
+        });
+      }
+
       // Test Gemini API with a simple prompt
       const testResponse = await ai.models.generateContent({
         model: "gemini-2.5-flash",
@@ -373,7 +435,7 @@ Now provide your HealthMate analysis:
         success: false,
         message: "AI services are unavailable",
         geminiStatus: "disconnected",
-        error: error.message,
+        error: process.env.NODE_ENV === 'production' ? "Service unavailable" : error.message,
         timestamp: new Date().toISOString()
       });
     }

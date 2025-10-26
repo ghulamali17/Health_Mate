@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const connectDB = require("./connection");
 const userRouter = require("./routes/userRoutes");
 const chatRouter = require("./routes/chatRoutes");
 const cookieParser = require("cookie-parser");
@@ -10,31 +9,7 @@ const summarizeRouter = require("./routes/summarizeRoutes");
 
 const app = express();
 
-// CORS Configuration 
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     const allowedOrigins = [
-//       "https://health-mate-pearl.vercel.app",
-//       "https://health-mate-s6gc.vercel.app", 
-//       "http://localhost:5173"
-//     ];
-    
-//     if (!origin) return callback(null, true);
-    
-//     if (allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-//   credentials: true,
-//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-//   allowedHeaders: ['Content-Type', 'Authorization'],
-//   exposedHeaders: ['set-cookie']
-// };
-
-// app.use(cors(corsOptions));
-
+// CORS configuration
 app.use(
   cors({
     origin: [
@@ -43,18 +18,19 @@ app.use(
       "http://localhost:5173"
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Handle preflight requests
+app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser());
 
-
-
 app.use("/images", express.static("public/images"));
 
-// MongoDB connection
-connectDB();
 
 // Routes
 app.use("/api/users", userRouter);
@@ -79,11 +55,18 @@ app.get("/", (req, res) => {
   });
 });
 
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.message);
+  console.error('Stack:', err.stack);
   res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error'
+    error: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
   });
 });
 

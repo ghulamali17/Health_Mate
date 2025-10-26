@@ -2,22 +2,25 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const sendEmail = require("../utils/sendEmail");
+const connectDB = require("../connection");
 
 // Login
 const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    await connectDB();
+    
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(404).json("No record found");
+      return res.status(404).json({ error: "No record found" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json("Incorrect password");
+      return res.status(401).json({ error: "Incorrect password" });
     }
 
     const token = jwt.sign(
@@ -38,14 +41,21 @@ const login = async (req, res) => {
     });
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json("Something went wrong");
+    res.status(500).json({ error: "Something went wrong" });
   }
 };
 
 // Register
 const register = async (req, res) => {
   try {
+    await connectDB();
+    
     const { name, email, password, profileImage } = req.body;
+
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -59,8 +69,21 @@ const register = async (req, res) => {
       password: hashedPassword,
       profileImage,
     });
-    res.json({ message: "User registered successfully", user });
+    
+    // Don't send password back
+    const userResponse = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      profileImage: user.profileImage,
+    };
+    
+    res.status(201).json({ 
+      message: "User registered successfully", 
+      user: userResponse 
+    });
   } catch (err) {
+    console.error("Register error:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -68,6 +91,8 @@ const register = async (req, res) => {
 // Get current user
 const getCurrentUser = async (req, res) => {
   try {
+    await connectDB();
+    
     const token = req.headers.authorization?.split(" ")[1];
     
     if (!token) {
@@ -84,18 +109,30 @@ const getCurrentUser = async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error("Get current user error:", err);
+    
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: "Token expired" });
+    }
+    
     res.status(500).json({ error: "Failed to get user" });
   }
 };
 
-// Mail send
+// Mail sending controller
 const sendWelcomeEmail = async (req, res) => {
   const { email, name } = req.body;
 
   try {
+    if (!email || !name) {
+      return res.status(400).json({ error: "Email and name are required" });
+    }
+    
     await sendEmail(
       email,
-      "Welcome to Hackathon App",
+      "Welcome to HealthMate",
       `<p>Hi <b>${name}</b>, your account has been created successfully.</p>`
     );
     res.status(200).json({ message: "Email sent successfully" });

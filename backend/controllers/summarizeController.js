@@ -7,7 +7,7 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Helper function to extract text from PDF buffer
+// Extract text from PDF buffer
 async function extractTextFromPDFBuffer(buffer) {
   try {
     const data = await pdfParse(buffer);
@@ -21,6 +21,14 @@ async function extractTextFromPDFBuffer(buffer) {
 // File summarization controller
 const summarizeFile = async (req, res) => {
   try {
+    // Validate API key
+    if (!process.env.GOOGLE_API_KEY) {
+      console.error("GOOGLE_API_KEY is not set");
+      return res.status(500).json({ 
+        error: "AI service configuration error. Please contact support." 
+      });
+    }
+
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded." });
     }
@@ -34,6 +42,7 @@ const summarizeFile = async (req, res) => {
 
     console.log("Processing file:", req.file.originalname);
     console.log("File type:", fileType);
+    console.log("File size:", req.file.size, "bytes");
 
     // Extract text depending on file type
     if (fileType === "application/pdf") {
@@ -51,25 +60,31 @@ const summarizeFile = async (req, res) => {
     } else {
       return res
         .status(400)
-        .json({ error: "Unsupported file type. Please upload PDF, DOCX, or TXT files." });
+        .json({ 
+          error: "Unsupported file type. Please upload PDF, DOCX, or TXT files.",
+          receivedType: fileType 
+        });
     }
 
     if (!text || text.trim().length === 0) {
       return res
         .status(400)
-        .json({ error: "Could not extract text from file. The file might be empty or corrupted." });
+        .json({ 
+          error: "Could not extract text from file. The file might be empty or corrupted." 
+        });
     }
+
+    console.log("Extracted text length:", text.length);
 
     // Limit text length
     const maxLength = 30000;
     if (text.length > maxLength) {
+      console.log("Text truncated from", text.length, "to", maxLength);
       text = text.substring(0, maxLength) + "\n\n[Text truncated due to length...]";
     }
 
     // prompt
-
-// prompt
-const prompt = `
+    const prompt = `
 You are **HealthMate** – Your Smart Health Companion 💚  
 An AI-powered personal health assistant that helps users understand their medical reports with clarity and care.
 
@@ -210,19 +225,43 @@ ${userPrompt ? `User Question: ${userPrompt}` : ''}
 **NOW GENERATE THE COMPLETE HTML USING THIS STRUCTURE WITH ACTUAL MEDICAL DATA.**
 `;
 
-// ... (Rest of the controller code, calling Gemini, remains the same) ...
     console.log("Sending to Gemini for summarization...");
+    
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
       contents: prompt,
     });
 
+    if (!response || !response.text) {
+      throw new Error("No response received from AI service");
+    }
+
+    console.log("Summarization successful");
     res.json({ summary: response.text });
+    
   } catch (error) {
     console.error("Summarization error:", error);
+    
+    // More specific error messages
+    if (error.message.includes("API key")) {
+      return res.status(500).json({
+        error: "AI service configuration error",
+        details: "Please contact support"
+      });
+    }
+    
+    if (error.message.includes("quota") || error.message.includes("rate limit")) {
+      return res.status(429).json({
+        error: "Service temporarily unavailable",
+        details: "Please try again in a few moments"
+      });
+    }
+    
     res.status(500).json({
       error: "Summarization failed",
-      details: error.message,
+      details: process.env.NODE_ENV === 'production' 
+        ? "An error occurred while processing your request" 
+        : error.message
     });
   }
 };
