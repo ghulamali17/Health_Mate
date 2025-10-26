@@ -45,14 +45,12 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(cookieParser());
-
-// Handle preflight requests explicitly
-app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(cookieParser());
+
+
+
 app.use("/images", express.static("public/images"));
 
 // MongoDB connection
