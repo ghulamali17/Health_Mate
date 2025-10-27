@@ -40,6 +40,7 @@ const routes = [
   { path: "/summarize", element: <UploadReportPage /> },
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
+  {path: "/all-vitals", element: <AllVitals /> },
 
   { path: "/about", element: <About /> },
   { path: "/unauthorized", element: <Unauthorized /> },
