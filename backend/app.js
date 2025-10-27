@@ -10,27 +10,65 @@ const summarizeRouter = require("./routes/summarizeRoutes");
 const app = express();
 
 // CORS configuration
-app.use(
-  cors({
-    origin: [
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
       "https://health-mate-pearl.vercel.app",
       "https://health-mate-s6gc.vercel.app", 
       "http://localhost:5173"
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+    ];
+    
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked for origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
 
-// Handle preflight requests
-app.options('*', cors());
+app.use(cors(corsOptions));
+
+// Handle preflight requests globally
+app.options('*', cors(corsOptions));
+// app.use(
+//   cors({
+//     origin: [
+//       "https://health-mate-pearl.vercel.app",
+//       "https://health-mate-s6gc.vercel.app", 
+//       "http://localhost:5173"
+//     ],
+//     credentials: true,
+//     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//   })
+// );
+
+// // Handle preflight requests
+// app.options('*', cors());
 
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/images", express.static("public/images"));
 
+// verify required environment variables
+const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+}
 
 // Routes
 app.use("/api/users", userRouter);
