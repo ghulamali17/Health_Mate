@@ -1,20 +1,12 @@
 const ChatHistory = require("../models/ChatHistory");
-const connectDB = require("../connection");
 
 // Save a message to chat history
 const saveMessage = async (req, res) => {
   try {
-    await connectDB();
-    
     const { userId, sessionId, message } = req.body;
 
     if (!userId || !sessionId || !message) {
       return res.status(400).json({ error: "Missing required fields" });
-    }
-
-    // Validate message structure
-    if (!message.role || !message.text) {
-      return res.status(400).json({ error: "Invalid message format" });
     }
 
     let chat = await ChatHistory.findOne({ userId, sessionId });
@@ -41,13 +33,7 @@ const saveMessage = async (req, res) => {
 // Get chat history for a specific session
 const getChatHistory = async (req, res) => {
   try {
-    await connectDB();
-    
     const { userId, sessionId } = req.params;
-
-    if (!userId || !sessionId) {
-      return res.status(400).json({ error: "Missing userId or sessionId" });
-    }
 
     const chat = await ChatHistory.findOne({ userId, sessionId });
 
@@ -65,13 +51,7 @@ const getChatHistory = async (req, res) => {
 // Get all chat sessions for a user
 const getAllSessions = async (req, res) => {
   try {
-    await connectDB();
-    
     const { userId } = req.params;
-
-    if (!userId) {
-      return res.status(400).json({ error: "Missing userId" });
-    }
 
     const sessions = await ChatHistory.find({ userId })
       .sort({ lastActive: -1 })
@@ -83,7 +63,7 @@ const getAllSessions = async (req, res) => {
       lastActive: session.lastActive,
       createdAt: session.createdAt,
       messageCount: session.messages.length,
-      preview: session.messages[0]?.text?.substring(0, 50) || "New conversation",
+      preview: session.messages[0]?.text.substring(0, 50) || "New conversation",
     }));
 
     res.json({ sessions: formattedSessions });
@@ -96,19 +76,9 @@ const getAllSessions = async (req, res) => {
 // Delete a chat session
 const deleteSession = async (req, res) => {
   try {
-    await connectDB();
-    
     const { userId, sessionId } = req.params;
 
-    if (!userId || !sessionId) {
-      return res.status(400).json({ error: "Missing userId or sessionId" });
-    }
-
-    const result = await ChatHistory.findOneAndDelete({ userId, sessionId });
-
-    if (!result) {
-      return res.status(404).json({ error: "Session not found" });
-    }
+    await ChatHistory.findOneAndDelete({ userId, sessionId });
 
     res.json({ success: true, message: "Session deleted successfully" });
   } catch (err) {
@@ -120,13 +90,7 @@ const deleteSession = async (req, res) => {
 // Clear all messages in a session
 const clearSession = async (req, res) => {
   try {
-    await connectDB(); 
-    
     const { userId, sessionId } = req.params;
-
-    if (!userId || !sessionId) {
-      return res.status(400).json({ error: "Missing userId or sessionId" });
-    }
 
     const chat = await ChatHistory.findOne({ userId, sessionId });
 
