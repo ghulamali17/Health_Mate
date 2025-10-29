@@ -37,6 +37,7 @@ const routes = [
   { path: "/login*", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/add-vitals", element: <AddVitals /> },
+  { path: "/all-vitals", element: <AllVitals /> },
   { path: "/summarize", element: <UploadReportPage /> },
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
