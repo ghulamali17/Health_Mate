@@ -15,7 +15,8 @@ import About from "../pages/About";
 import HealthTips from "../pages/HealthTips";
 import Profile from "../pages/Profile";
 import SavedReports from "../pages/SavedReports";
-
+import EmergencyContacts from '../pages/EmergencyContacts';
+import FamilyMembers from "../pages/FamilyMembers";
 const routes = [
   {
     path: "/",
@@ -34,16 +35,17 @@ const routes = [
     ),
   },
 
-    { path: "/chat*", element: <Healthmate /> },
+  { path: "/chat*", element: <Healthmate /> },
   { path: "/login*", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/add-vitals", element: <AddVitals /> },
   { path: "/summarize", element: <UploadReportPage /> },
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
-  {path: "/all-vitals", element: <AllVitals /> },
-    {path: "/reports", element: <SavedReports /> },
-
+  { path: "/all-vitals", element: <AllVitals /> },
+  { path: "/family-members", element: <FamilyMembers /> },
+  { path: "/reports", element: <SavedReports /> },
+  { path: "/emergency-contacts", element: <EmergencyContacts /> },
   { path: "/about", element: <About /> },
   { path: "/unauthorized", element: <Unauthorized /> },
   { path: "*", element: <NotFound /> },

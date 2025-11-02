@@ -22,9 +22,12 @@ import {
   LayoutDashboard,
   Sparkles,
   Shield,
-  Bell,
+  Phone,
+  Users,
   X,
 } from "lucide-react";
+
+
 import { useNavigate } from "react-router-dom";
 import api from "../../config/api"; 
 import { useAuth } from "../../context/authContext";
@@ -465,57 +468,103 @@ const Dashboard = () => {
            </div>
    
            {/* Enhanced Quick Actions */}
-           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
-             <div className="flex items-center gap-3 mb-5">
-               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                 <Plus className="w-6 h-6 text-white" />
-               </div>
-               <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-               <button onClick={()=>navigate("/add-vitals")} className="group cursor-pointer relative bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-5 hover:shadow-xl transition-all border border-red-100 overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-pink-500/0 group-hover:from-red-500/5 group-hover:to-pink-500/5 transition-all"></div>
-                 <div className="relative flex items-center gap-4">
-                   <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                     <Heart className="w-6 h-6 text-white" />
-                   </div>
-                   <div className="flex-1 text-left">
-                     <p className="font-bold text-gray-900 mb-1">Add Vitals</p>
-                     <p className="text-xs text-gray-600">Record BP, Sugar, Weight</p>
-                   </div>
-                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                 </div>
-               </button>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
+  <div className="flex items-center gap-3 mb-5">
+    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+      <Plus className="w-6 h-6 text-white" />
+    </div>
+    <h2 className="text-xl font-bold text-gray-900">Quick Actions</h2>
+  </div>
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {/* Existing Cards */}
+    <button onClick={() => navigate("/add-vitals")} className="group cursor-pointer relative bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-5 hover:shadow-xl transition-all border border-red-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-red-500/0 to-pink-500/0 group-hover:from-red-500/5 group-hover:to-pink-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <Heart className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Add Vitals</p>
+          <p className="text-xs text-gray-600">Record BP, Sugar, Weight</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
 
-               <button onClick={()=>navigate("/summarize")} className="group cursor-pointer relative bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 hover:shadow-xl transition-all border border-blue-100 overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all"></div>
-                 <div className="relative flex items-center gap-4">
-                   <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                     <Upload className="w-6 h-6 text-white" />
-                   </div>
-                   <div className="flex-1 text-left">
-                     <p className="font-bold text-gray-900 mb-1">Upload Report</p>
-                     <p className="text-xs text-gray-600">AI will summarize it</p>
-                   </div>
-                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                 </div>
-               </button>
+    <button onClick={() => navigate("/summarize")} className="group cursor-pointer relative bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 hover:shadow-xl transition-all border border-blue-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-cyan-500/0 group-hover:from-blue-500/5 group-hover:to-cyan-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <Upload className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Upload Report</p>
+          <p className="text-xs text-gray-600">AI will summarize it</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
 
-               <button onClick={()=>navigate("/chat")} className="group cursor-pointer relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 hover:shadow-xl transition-all border border-emerald-100 overflow-hidden">
-                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-teal-500/0 group-hover:from-emerald-500/5 group-hover:to-teal-500/5 transition-all"></div>
-                 <div className="relative flex items-center gap-4">
-                   <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                     <MessageSquare className="w-6 h-6 text-white" />
-                   </div>
-                   <div className="flex-1 text-left">
-                     <p className="font-bold text-gray-900 mb-1">Ask AI</p>
-                     <p className="text-xs text-gray-600">Health questions & advice</p>
-                   </div>
-                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                 </div>
-               </button>
-             </div>
-           </div>
+    <button onClick={() => navigate("/chat")} className="group cursor-pointer relative bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 hover:shadow-xl transition-all border border-emerald-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-teal-500/0 group-hover:from-emerald-500/5 group-hover:to-teal-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <MessageSquare className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Ask AI</p>
+          <p className="text-xs text-gray-600">Health questions & advice</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
+
+    {/* Family Members Card */}
+    <button onClick={() => navigate("/family-members")} className="group cursor-pointer relative bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-5 hover:shadow-xl transition-all border border-indigo-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <Users className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Family Members</p>
+          <p className="text-xs text-gray-600">Manage family health</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
+
+    {/* New Card 1: Health Timeline */}
+    <button onClick={() => navigate("/timeline")} className="group cursor-pointer relative bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 hover:shadow-xl transition-all border border-amber-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/0 to-orange-500/0 group-hover:from-amber-500/5 group-hover:to-orange-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <Calendar className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Health Timeline</p>
+          <p className="text-xs text-gray-600">View your health journey</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
+
+    {/* New Card 2: Emergency Contacts */}
+    <button onClick={() => navigate("/emergency")} className="group cursor-pointer relative bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 hover:shadow-xl transition-all border border-rose-100 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-red-500/0 group-hover:from-rose-500/5 group-hover:to-red-500/5 transition-all"></div>
+      <div className="relative flex items-center gap-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+          <Phone className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="font-bold text-gray-900 mb-1">Emergency Contacts</p>
+          <p className="text-xs text-gray-600">Quick access to help</p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+      </div>
+    </button>
+  </div>
+</div>
    
            {/* Main Content Grid */}
            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
