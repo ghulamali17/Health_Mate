@@ -1,31 +1,20 @@
 const { GoogleGenAI } = require("@google/genai");
-const pdfParse = require("pdf-parse");
-const mammoth = require("mammoth");
+const fileService = require("../services/fileService");
+const fileUploadService = require("../services/fileUploadService");
+const Report = require("../models/Report");
 
-// Initialize Gemini 2.5 client
+// Initialize Gemini client
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
-// Extract text from PDF buffer
-async function extractTextFromPDFBuffer(buffer) {
-  try {
-    const data = await pdfParse(buffer);
-    return data.text;
-  } catch (error) {
-    console.error("PDF Parsing Error:", error);
-    throw new Error("PDF parsing failed: " + error.message);
-  }
-}
-
-// File summarization controller
 const summarizeFile = async (req, res) => {
   try {
-    // Validate API key
+    // ✅ Validate API key first
     if (!process.env.GOOGLE_API_KEY) {
       console.error("GOOGLE_API_KEY is not set");
-      return res.status(500).json({ 
-        error: "AI service configuration error. Please contact support." 
+      return res.status(500).json({
+        error: "AI service configuration error. Please contact support.",
       });
     }
 
@@ -33,54 +22,87 @@ const summarizeFile = async (req, res) => {
       return res.status(400).json({ error: "No file uploaded." });
     }
 
+
+    let userId = null;
+    if (req.user && req.user._id) {
+      userId = req.user._id.toString();
+      console.log("✅ User authenticated:", userId);
+    } else {
+      console.log("⚠️ No user authenticated - guest mode");
+    }
+    
+    const shouldSaveReport = !!userId;
+
+    console.log("User ID from request:", userId);
+    console.log("Should save report:", shouldSaveReport);
+    console.log("Request headers authorization:", req.headers.authorization ? "Present" : "Missing");
+
     const fileBuffer = req.file.buffer;
     const fileType = req.file.mimetype;
+    const fileName = req.file.originalname;
+    const fileSize = req.file.size;
     const userPrompt = req.body?.prompt?.trim() || "Please analyze this medical report";
     const userVitals = req.body?.vitals ? JSON.parse(req.body.vitals) : null;
     const reportContext = req.body?.reportContext || null;
-    let text = "";
 
-    console.log("Processing file:", req.file.originalname);
+    console.log("Processing file:", fileName);
     console.log("File type:", fileType);
-    console.log("File size:", req.file.size, "bytes");
+    console.log("File size:", fileSize, "bytes");
 
-    // Extract text depending on file type
-    if (fileType === "application/pdf") {
-      text = await extractTextFromPDFBuffer(fileBuffer);
-    } else if (
-      fileType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    ) {
-      const result = await mammoth.extractRawText({
-        buffer: fileBuffer,
-      });
-      text = result.value;
-    } else if (fileType.startsWith("text/")) {
-      text = fileBuffer.toString("utf8");
+    //: Upload file to Cloudinary 
+    let uploadResult = null;
+    if (shouldSaveReport) {
+      console.log("📤 Uploading file to Cloudinary...");
+      try {
+        uploadResult = await fileUploadService.uploadToCloudinary(fileBuffer, {
+          folder: "medical-reports",
+          filename: fileName.replace(/\.[^/.]+$/, ""), 
+          userId: userId,
+          tags: ["medical", "report"],
+        });
+      } catch (uploadError) {
+        console.error("❌ Cloudinary upload failed:", uploadError);
+        return res.status(500).json({
+          error: "Failed to upload file to cloud storage",
+          details: uploadError.message,
+        });
+      }
     } else {
-      return res
-        .status(400)
-        .json({ 
-          error: "Unsupported file type. Please upload PDF, DOCX, or TXT files.",
-          receivedType: fileType 
-        });
+      console.log("⚠️ Guest mode: File will not be saved to cloud storage");
     }
 
-    if (!text || text.trim().length === 0) {
-      return res
-        .status(400)
-        .json({ 
-          error: "Could not extract text from file. The file might be empty or corrupted." 
+    // Extract text from file
+    console.log("📄 Extracting text from file...");
+    let extractedText;
+    try {
+      extractedText = await fileService.extractTextFromFile(fileBuffer, fileType);
+      
+      if (!extractedText || extractedText.trim().length === 0) {
+        if (uploadResult) {
+          await fileUploadService.deleteFromCloudinary(uploadResult.publicId);
+        }
+        return res.status(400).json({
+          error: "Could not extract text from file. The file might be empty or corrupted.",
         });
-    }
+      }
 
-    console.log("Extracted text length:", text.length);
+      console.log("✅ Extracted text length:", extractedText.length);
+    } catch (extractError) {
+  
+      if (uploadResult) {
+        await fileUploadService.deleteFromCloudinary(uploadResult.publicId);
+      }
+      return res.status(400).json({
+        error: "Failed to process file",
+        details: extractError.message,
+      });
+    }
 
     // Limit text length
     const maxLength = 30000;
-    if (text.length > maxLength) {
-      console.log("Text truncated from", text.length, "to", maxLength);
-      text = text.substring(0, maxLength) + "\n\n[Text truncated due to length...]";
+    if (extractedText.length > maxLength) {
+      console.log("Text truncated from", extractedText.length, "to", maxLength);
+      extractedText = extractedText.substring(0, maxLength) + "\n\n[Text truncated due to length...]";
     }
 
     // prompt
@@ -100,7 +122,7 @@ An AI-powered personal health assistant that helps users understand their medica
 - Make it scannable: Use icons (emoji), bold headers, organized sections, and white space
 
 **Medical Report Content:**
-${text}
+${extractedText}
 
 **Context:**
 ${reportContext ? `Previous Report: ${reportContext}` : 'No previous report'}
@@ -117,151 +139,98 @@ ${userPrompt ? `User Question: ${userPrompt}` : ''}
 6. **Important Notes** - Follow-up timeline, red flags
 7. **Disclaimer** - Brief, in English + short Roman Urdu line
 
-**HTML Structure Template:**
-
-<div class="space-y-6 text-gray-800">
-  <!-- Header -->
-  <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-l-4 border-green-500">
-    <h2 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-      💚 HealthMate Analysis
-    </h2>
-    <p class="text-sm text-gray-600">Generated on [Date] • Report Type: [Type]</p>
-  </div>
-
-  <!-- Summary -->
-  <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-    <h3 class="text-xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-      📋 Report Summary
-    </h3>
-    <p class="text-gray-700 leading-relaxed mb-3">[English explanation]</p>
-    <p class="text-sm text-gray-600 italic">[One Roman Urdu line for warmth]</p>
-  </div>
-
-  <!-- Key Findings -->
-  <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-      🔍 Key Findings
-    </h3>
-    <div class="space-y-3">
-      <div class="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-        <span class="text-green-600 font-bold">✓</span>
-        <div>
-          <p class="font-medium text-gray-900">[Test Name]: [Value]</p>
-          <p class="text-sm text-gray-600">[Brief explanation]</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Abnormal Values (if any) -->
-  <div class="bg-red-50 p-6 rounded-lg border-l-4 border-red-500">
-    <h3 class="text-xl font-semibold text-red-800 mb-4 flex items-center gap-2">
-      ⚠️ Values Needing Attention
-    </h3>
-    <div class="space-y-4">
-      <div class="bg-white p-4 rounded-lg">
-        <p class="font-semibold text-gray-900 mb-1">[Test Name]: [Value] [Unit]</p>
-        <p class="text-sm text-gray-700 mb-2"><span class="font-medium">Normal Range:</span> [Range]</p>
-        <p class="text-sm text-gray-600">[What this means in simple terms]</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Recommended Actions -->
-  <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-      🥗 Recommended Actions
-    </h3>
-    <div class="grid md:grid-cols-2 gap-4">
-      <div class="p-4 bg-green-50 rounded-lg">
-        <p class="font-semibold text-green-800 mb-2">✅ Foods to Include</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>• [Food item with brief reason]</li>
-        </ul>
-      </div>
-      <div class="p-4 bg-red-50 rounded-lg">
-        <p class="font-semibold text-red-800 mb-2">❌ Foods to Limit</p>
-        <ul class="text-sm text-gray-700 space-y-1">
-          <li>• [Food item with brief reason]</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- Questions for Doctor -->
-  <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
-    <h3 class="text-xl font-semibold text-blue-900 mb-4 flex items-center gap-2">
-      💬 Questions to Ask Your Doctor
-    </h3>
-    <ol class="space-y-2 text-sm text-gray-700">
-      <li class="flex gap-2">
-        <span class="font-semibold text-blue-700">1.</span>
-        <span>[Specific question based on findings]</span>
-      </li>
-    </ol>
-  </div>
-
-  <!-- Important Notes -->
-  <div class="bg-yellow-50 p-5 rounded-lg border-l-4 border-yellow-500">
-    <h3 class="text-lg font-semibold text-yellow-900 mb-3 flex items-center gap-2">
-      📌 Important Notes
-    </h3>
-    <ul class="text-sm text-gray-700 space-y-2">
-      <li>• <span class="font-medium">Follow-up:</span> [Timeline recommendation]</li>
-      <li>• <span class="font-medium">Watch for:</span> [Red flag symptoms]</li>
-    </ul>
-  </div>
-
-  <!-- Disclaimer -->
-  <div class="bg-gray-100 p-4 rounded-lg border border-gray-300">
-    <p class="text-xs text-gray-700 leading-relaxed">
-      <span class="font-semibold">⚠️ Medical Disclaimer:</span> This AI analysis is for educational purposes only and does not replace professional medical advice. Always consult your healthcare provider before making any medical decisions.
-      <br>
-      <span class="italic text-gray-600 mt-1 inline-block">Doctor se mashwara zaroor karein - yeh sirf samajhne ke liye hai.</span>
-    </p>
-  </div>
-</div>
-
 **NOW GENERATE THE COMPLETE HTML USING THIS STRUCTURE WITH ACTUAL MEDICAL DATA.**
 `;
 
-    console.log("Sending to Gemini for summarization...");
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+    console.log("🤖 Sending to Gemini for summarization...");
+    let aiSummary;
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
 
-    if (!response || !response.text) {
-      throw new Error("No response received from AI service");
-    }
+      if (!response || !response.text) {
+        throw new Error("No response received from AI service");
+      }
 
-    console.log("Summarization successful");
-    res.json({ summary: response.text });
-    
-  } catch (error) {
-    console.error("Summarization error:", error);
-    
-    // More specific error messages
-    if (error.message.includes("API key")) {
+      aiSummary = response.text;
+      console.log("✅ AI summarization successful");
+    } catch (aiError) {
+  
+      if (uploadResult) {
+        await fileUploadService.deleteFromCloudinary(uploadResult.publicId);
+      }
+      
+      if (aiError.message.includes("quota") || aiError.message.includes("rate limit")) {
+        return res.status(429).json({
+          error: "AI service temporarily unavailable",
+          details: "Please try again in a few moments",
+        });
+      }
+      
       return res.status(500).json({
-        error: "AI service configuration error",
-        details: "Please contact support"
+        error: "AI analysis failed",
+        details: process.env.NODE_ENV === "production" 
+          ? "An error occurred while processing your request" 
+          : aiError.message,
       });
     }
-    
-    if (error.message.includes("quota") || error.message.includes("rate limit")) {
-      return res.status(429).json({
-        error: "Service temporarily unavailable",
-        details: "Please try again in a few moments"
+
+    //  Save report metadata to MongoDB
+    if (shouldSaveReport && uploadResult) {
+      console.log("💾 Saving report to database...");
+      try {
+        const newReport = new Report({
+          userId: userId,
+          fileName: fileName,
+          fileUrl: uploadResult.url,
+          cloudinaryPublicId: uploadResult.publicId,
+          fileType: fileType,
+          fileSize: fileSize,
+          aiSummary: aiSummary,
+          extractedText: extractedText.substring(0, 5000), 
+          reportType: "general", 
+          tags: ["medical", "report"],
+        });
+
+        await newReport.save();
+        console.log("✅ Report saved to database:", newReport._id);
+
+      
+        return res.json({
+          success: true,
+          summary: aiSummary,
+          reportId: newReport._id,
+          fileUrl: uploadResult.url,
+          message: "Report uploaded and analyzed successfully",
+        });
+      } catch (dbError) {
+        console.error("❌ Database save error:", dbError);
+        return res.json({
+          success: true,
+          summary: aiSummary,
+          fileUrl: uploadResult.url,
+          warning: "Report analyzed but database save failed",
+        });
+      }
+    } else {
+      // Guest user only the summary
+      console.log("⚠️ Guest mode: Report not saved to database");
+      return res.json({
+        success: true,
+        summary: aiSummary,
+        message: "Report analyzed successfully (not saved - please login to save reports)",
+        isGuestMode: true,
       });
     }
-    
+  } catch (error) {
+    console.error("❌ Unexpected error:", error);
     res.status(500).json({
-      error: "Summarization failed",
-      details: process.env.NODE_ENV === 'production' 
-        ? "An error occurred while processing your request" 
-        : error.message
+      error: "An unexpected error occurred",
+      details: process.env.NODE_ENV === "production"
+        ? "Please try again later"
+        : error.message,
     });
   }
 };

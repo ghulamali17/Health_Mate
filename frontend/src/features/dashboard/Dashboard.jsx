@@ -1,14 +1,31 @@
 import React, { useState, useRef, useEffect } from "react";
-import { 
-  Activity, FileText, MessageSquare, Plus, TrendingUp, 
-  Heart, Calendar, Clock, ArrowRight, Upload, ChevronRight,
-  Droplet, Weight, Thermometer, BarChart3, User, Settings, LogOut, LayoutDashboard
+import {
+  Activity,
+  FileText,
+  MessageSquare,
+  Plus,
+  TrendingUp,
+  Heart,
+  Calendar,
+  Clock,
+  ArrowRight,
+  Upload,
+  ChevronRight,
+  Droplet,
+  Weight,
+  Thermometer,
+  BarChart3,
+  User,
+  Settings,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import api from "../../config/api"; // Import centralized API
+import api from "../../config/api"; 
 import { useAuth } from "../../context/authContext";
 import { toast } from "react-toastify";
 import useClickOutside from "../../hooks/useClickOutside";
+import axios from "axios";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -16,7 +33,13 @@ const Dashboard = () => {
   const [loadingVitals, setLoadingVitals] = useState(false);
   const [loadingUser, setLoadingUser] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+  const [recentReports, setRecentReports] = useState([]);
+  const [loadingReports, setLoadingReports] = useState(true);
+  // const [recentReports, setRecentReports] = useState([]);
+  const [totalReports, setTotalReports] = useState(0);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -24,12 +47,12 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     totalReports: 12,
     totalVitals: 0,
-    totalChats: 0, 
+    totalChats: 0,
     lastVital: {
       bp: "--/--",
       sugar: "--",
-      date: "No data"
-    }
+      date: "No data",
+    },
   });
 
   // Update stats when vitals change
@@ -37,18 +60,20 @@ const Dashboard = () => {
     if (vitals.length === 0) return;
 
     const lastVital = vitals[vitals.length - 1];
-    setStats(prev => ({
+    setStats((prev) => ({
       ...prev,
       totalVitals: vitals.length,
       lastVital: {
-        bp: lastVital.bloodPressure?.systolic && lastVital.bloodPressure?.diastolic
-          ? `${lastVital.bloodPressure.systolic}/${lastVital.bloodPressure.diastolic}`
-          : "--/--",
+        bp:
+          lastVital.bloodPressure?.systolic &&
+          lastVital.bloodPressure?.diastolic
+            ? `${lastVital.bloodPressure.systolic}/${lastVital.bloodPressure.diastolic}`
+            : "--/--",
         sugar: lastVital.bloodSugar || "--",
-        date: lastVital.measuredAt 
+        date: lastVital.measuredAt
           ? new Date(lastVital.measuredAt).toLocaleDateString()
-          : "No data"
-      }
+          : "No data",
+      },
     }));
   }, [vitals]);
 
@@ -86,8 +111,11 @@ const Dashboard = () => {
         const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
-        console.error("Failed to fetch user:", err.response?.data || err.message);
-        
+        console.error(
+          "Failed to fetch user:",
+          err.response?.data || err.message
+        );
+
         if (err.response?.status === 401) {
           toast.error("Session expired. Please login again.");
           localStorage.removeItem("pos-token");
@@ -106,7 +134,7 @@ const Dashboard = () => {
     fetchVitals();
   }, []);
 
-  // Fetch vitals 
+  // Fetch vitals
   const fetchVitals = async () => {
     try {
       setLoadingVitals(true);
@@ -120,12 +148,12 @@ const Dashboard = () => {
       setVitals(res.data);
     } catch (err) {
       console.error("Fetch vitals error:", err.response?.data || err.message);
-      
+
       if (err.response?.status === 401) {
         toast.error("Session expired. Please login again.");
         localStorage.removeItem("pos-token");
         navigate("/login");
-      } else if (err.code === 'ERR_NETWORK') {
+      } else if (err.code === "ERR_NETWORK") {
         toast.error("Network error. Please check your connection.");
       } else {
         toast.error("Failed to fetch vitals");
@@ -150,52 +178,72 @@ const Dashboard = () => {
       }
 
       await api.delete(`/api/vitals/deleteitem/${id}`);
-      
+
       setVitals((prev) => prev.filter((v) => v._id !== id));
       toast.success("Vital record deleted successfully");
     } catch (error) {
       console.error("Delete error:", error.response?.data || error.message);
-      
+
       if (error.response?.status === 401) {
         toast.error("Session expired. Please login again.");
         localStorage.removeItem("pos-token");
         navigate("/login");
       } else if (error.response?.status === 404) {
         toast.error("Vital record not found");
-      } else if (error.code === 'ERR_NETWORK') {
+      } else if (error.code === "ERR_NETWORK") {
         toast.error("Network error. Please check your connection.");
       } else {
-        toast.error(error.response?.data?.error || "Failed to delete vital record");
+        toast.error(
+          error.response?.data?.error || "Failed to delete vital record"
+        );
       }
     }
   };
 
-  // Sample data for reports
-  const [recentReports] = useState([
-    {
-      id: 1,
-      name: "Blood Test Report",
-      date: "20 Oct 2025",
-      type: "Lab Report",
-      status: "Reviewed"
-    },
-    {
-      id: 2,
-      name: "X-Ray Chest",
-      date: "15 Oct 2025",
-      type: "Radiology",
-      status: "Pending"
-    },
-    {
-      id: 3,
-      name: "ECG Report",
-      date: "10 Oct 2025",
-      type: "Cardiology",
-      status: "Reviewed"
+  // Get reports
+  useEffect(() => {
+    fetchRecentReports();
+  }, []);
+
+  const fetchRecentReports = async () => {
+    try {
+      setLoadingReports(true);
+      const token = localStorage.getItem("pos-token");
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+      const response = await axios.get(`${API_URL}/api/reports`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allReports = Array.isArray(response.data)
+        ? response.data
+        : response.data.reports || [];
+
+      setTotalReports(allReports.length);
+      setRecentReports(allReports.slice(-3).reverse());
+    } catch (error) {
+      console.error("Failed to fetch recent reports:", error);
+    } finally {
+      setLoadingReports(false);
     }
-  ]);
+  };
+    const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+  };
 
+  
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -206,19 +254,21 @@ const Dashboard = () => {
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">HealthMate Dashboard</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                HealthMate Dashboard
+              </h1>
               <p className="text-sm text-gray-500">Apki sehat, ek nazar mein</p>
             </div>
           </div>
-          <div  ref={dropdownRef} className="flex items-center gap-3 relative">
+          <div ref={dropdownRef} className="flex items-center gap-3 relative">
             <div className="relative hidden md:block">
-              <button 
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)} 
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <Settings className="w-5 h-5 text-gray-600" />
               </button>
-              
+
               {isDropdownOpen && (
                 <div className="absolute left-0 top-12 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn z-50">
                   <button
@@ -245,7 +295,7 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
               <User className="w-4 h-4 text-gray-600" />
               <span className="text-sm font-medium text-gray-700">
@@ -269,8 +319,10 @@ const Dashboard = () => {
             </div>
             <div>
               <p className="text-blue-100 text-sm mb-1">Total Reports</p>
-              <p className="text-3xl font-bold">{stats.totalReports}</p>
-              <p className="text-xs text-blue-100 mt-2">Reports uploaded kar liye</p>
+              <p className="text-3xl font-bold">{totalReports}</p>
+              <p className="text-xs text-blue-100 mt-2">
+                Reports uploaded kar liye
+              </p>
             </div>
           </div>
 
@@ -290,7 +342,9 @@ const Dashboard = () => {
                   BP: {stats.lastVital.bp} mmHg
                 </p>
               ) : (
-                <p className="text-xs text-red-100 mt-2">No vitals recorded yet</p>
+                <p className="text-xs text-red-100 mt-2">
+                  No vitals recorded yet
+                </p>
               )}
             </div>
           </div>
@@ -306,7 +360,9 @@ const Dashboard = () => {
             <div>
               <p className="text-green-100 text-sm mb-1">AI Conversations</p>
               <p className="text-3xl font-bold">{stats.totalChats}</p>
-              <p className="text-xs text-green-100 mt-2">Health queries resolved</p>
+              <p className="text-xs text-green-100 mt-2">
+                Health queries resolved
+              </p>
             </div>
           </div>
         </div>
@@ -322,33 +378,59 @@ const Dashboard = () => {
               <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
                 <Heart className="w-5 h-5 text-white" />
               </div>
-              <div className="text-left cursor-pointer" onClick={()=>navigate("/add-vitals")}>
-                <p className="font-semibold text-gray-900 text-sm">Add Vitals</p>
-                <p className="text-xs text-gray-500">Record BP, Sugar, Weight</p>
+              <div
+                className="text-left cursor-pointer"
+                onClick={() => navigate("/add-vitals")}
+              >
+                <p className="font-semibold text-gray-900 text-sm">
+                  Add Vitals
+                </p>
+                <p className="text-xs text-gray-500">
+                  Record BP, Sugar, Weight
+                </p>
               </div>
-              <ChevronRight onClick={()=>navigate("/add-vitals")} className="cursor-pointer w-5 h-5 text-gray-400 ml-auto" />
+              <ChevronRight
+                onClick={() => navigate("/add-vitals")}
+                className="cursor-pointer w-5 h-5 text-gray-400 ml-auto"
+              />
             </button>
 
             <button className="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg hover:shadow-md transition-all border border-blue-100">
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
                 <Upload className="w-5 h-5 text-white" />
               </div>
-              <div onClick={()=>navigate("/summarize")} className="text-left cursor-pointer">
-                <p className="font-semibold text-gray-900 text-sm">Upload Report</p>
+              <div
+                onClick={() => navigate("/summarize")}
+                className="text-left cursor-pointer"
+              >
+                <p className="font-semibold text-gray-900 text-sm">
+                  Upload Report
+                </p>
                 <p className="text-xs text-gray-500">AI will summarize it</p>
               </div>
-              <ChevronRight onClick={()=>navigate("/summarize")} className="cursor-pointer w-5 h-5 text-gray-400 ml-auto" />
+              <ChevronRight
+                onClick={() => navigate("/summarize")}
+                className="cursor-pointer w-5 h-5 text-gray-400 ml-auto"
+              />
             </button>
 
             <button className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg hover:shadow-md transition-all border border-purple-100">
               <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-white" />
               </div>
-              <div onClick={()=>navigate("/chat")} className="text-left cursor-pointer">
+              <div
+                onClick={() => navigate("/chat")}
+                className="text-left cursor-pointer"
+              >
                 <p className="font-semibold text-gray-900 text-sm">Ask AI</p>
-                <p className="text-xs text-gray-500">Health questions & advice</p>
+                <p className="text-xs text-gray-500">
+                  Health questions & advice
+                </p>
               </div>
-              <ChevronRight onClick={()=>navigate("/chat")} className="w-5 cursor-pointer h-5 text-gray-400 ml-auto" />
+              <ChevronRight
+                onClick={() => navigate("/chat")}
+                className="w-5 cursor-pointer h-5 text-gray-400 ml-auto"
+              />
             </button>
           </div>
         </div>
@@ -360,51 +442,103 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-500" />
-                Recent Reports
+                Recent Reports Summaries
               </h2>
-              <button className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+              <button
+                onClick={() => navigate("/reports")}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              >
                 View All
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="space-y-3">
-              {recentReports.map((report) => (
-                <div
-                  key={report.id}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{report.name}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Calendar className="w-3 h-3 text-gray-400" />
-                      <p className="text-xs text-gray-500">{report.date}</p>
-                      <span className="text-gray-300">•</span>
-                      <p className="text-xs text-gray-500">{report.type}</p>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 py-1 rounded text-xs font-medium ${
-                      report.status === "Reviewed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {report.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-            {recentReports.length === 0 && (
+
+            {loadingReports ? (
+              <div className="flex justify-center items-center py-10">
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="ml-2 text-gray-500 text-sm">Loading reports...</p>
+              </div>
+            ) : recentReports.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">No reports uploaded yet</p>
-                <p className="text-gray-400 text-xs mt-1">Upload your first medical report</p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Upload your first medical report
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentReports.map((report) => (
+                  <div
+                    key={report._id}
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 text-sm truncate">
+                        {report.fileName}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Calendar className="w-3 h-3 text-gray-400" />
+                        <p className="text-xs text-gray-500">
+                          {new Date(report.uploadedAt).toLocaleDateString()}
+                        </p>
+                        <span className="text-gray-300">•</span>
+                        <p className="text-xs text-gray-500">
+                          {report.reportType}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      // href={report.fileUrl}
+                      onClick={() => {
+                        setSelectedReport(report);
+                        setShowModal(true);
+                      }}
+                      className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                    >
+                      View
+                    </a>
+                  </div>
+                ))}
               </div>
             )}
           </div>
+           {/* Modal for viewing report */}
+      {showModal && selectedReport && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {selectedReport.fileName}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Uploaded: {formatDate(selectedReport.uploadedAt)}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              {selectedReport.aiSummary ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: selectedReport.aiSummary }}
+                />
+              ) : (
+                <p className="text-gray-500">No AI summary available</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
           {/* Recent Vitals */}
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
@@ -413,7 +547,10 @@ const Dashboard = () => {
                 <Heart className="w-5 h-5 text-red-500" />
                 Recent Vitals
               </h2>
-              <button onClick={()=>navigate("/all-vitals")} className="text-sm cursor-pointer text-red-600 hover:text-red-700 font-medium flex items-center gap-1">
+              <button
+                onClick={() => navigate("/all-vitals")}
+                className="text-sm cursor-pointer text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+              >
                 View All
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -428,7 +565,9 @@ const Dashboard = () => {
               <div className="text-center py-8">
                 <Heart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm">No vitals recorded yet</p>
-                <p className="text-gray-400 text-xs mt-1">Start tracking your health today</p>
+                <p className="text-gray-400 text-xs mt-1">
+                  Start tracking your health today
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -462,7 +601,8 @@ const Dashboard = () => {
                           <div>
                             <p className="text-xs text-gray-500">BP</p>
                             <p className="text-sm font-semibold text-gray-900">
-                              {vital.bloodPressure?.systolic || "--"}/{vital.bloodPressure?.diastolic || "--"}
+                              {vital.bloodPressure?.systolic || "--"}/
+                              {vital.bloodPressure?.diastolic || "--"}
                             </p>
                           </div>
                         </div>
@@ -501,11 +641,17 @@ const Dashboard = () => {
               <Activity className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg mb-1">💡 Daily Health Tip</h3>
+              <h3 className="font-semibold text-lg mb-1">
+                💡 Daily Health Tip
+              </h3>
               <p className="text-green-50 text-sm">
-                Regular monitoring of vitals helps in early detection of health issues. Roz apne BP aur Sugar check karein!
+                Regular monitoring of vitals helps in early detection of health
+                issues. Roz apne BP aur Sugar check karein!
               </p>
-              <button onClick={()=>navigate("/health-tips")} className="mt-3 px-4 py-2 bg-white text-green-600 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors">
+              <button
+                onClick={() => navigate("/health-tips")}
+                className="mt-3 px-4 py-2 bg-white text-green-600 rounded-lg text-sm font-medium hover:bg-green-50 transition-colors"
+              >
                 Learn More
               </button>
             </div>
@@ -515,8 +661,10 @@ const Dashboard = () => {
         {/* Disclaimer */}
         <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
           <p className="text-sm text-yellow-800">
-            ⚠️ <strong>Disclaimer:</strong> HealthMate AI is for understanding your reports only, not for medical advice. 
-            Always consult your doctor before making any health decisions. Yeh AI sirf samajhne ke liye hai, ilaaj ke liye nahi.
+            ⚠️ <strong>Disclaimer:</strong> HealthMate AI is for understanding
+            your reports only, not for medical advice. Always consult your
+            doctor before making any health decisions. Yeh AI sirf samajhne ke
+            liye hai, ilaaj ke liye nahi.
           </p>
         </div>
       </div>

@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const vitalRouter = require("./routes/vitalRoutes");
 const healthmateRouter = require("./routes/healthmateRoutes");
 const summarizeRouter = require("./routes/summarizeRoutes");
+const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.use("/api/chat", chatRouter);
 app.use("/api/vitals", vitalRouter);
 app.use("/api/healthmate", healthmateRouter);
 app.use("/api/summarize", summarizeRouter);
+app.use("/api/reports", reportRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {

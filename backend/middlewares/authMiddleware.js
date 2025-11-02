@@ -1,104 +1,57 @@
+// middlewares/authMiddleware.js
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const connectDB = require("../connection");
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // Connect to DB only if not already connected
     await connectDB();
 
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ 
-        error: "Authorization header missing or invalid",
-        details: "Format should be: Bearer <token>"
-      });
+      console.log("🔐 No token - proceeding as guest");
+      req.user = null;
+      return next();
     }
 
     const token = authHeader.split(" ")[1];
     
     if (!token) {
-      return res.status(401).json({ error: "Token not provided" });
+      console.log("🔐 Empty token - proceeding as guest");
+      req.user = null;
+      return next();
     }
 
     // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find the user by ID
-    const user = await User.findById(decoded.id).select("-password");
+      // Find the user by ID
+      const user = await User.findById(decoded.id).select("-password");
 
-    if (!user) {
-      return res.status(401).json({ error: "User not found" });
+      if (!user) {
+        console.log("🔐 User not found - proceeding as guest");
+        req.user = null;
+        return next();
+      }
+
+      // Attach user to request object
+      req.user = user;
+      console.log("🔐 User authenticated:", user._id);
+      next();
+    } catch (tokenError) {
+   
+      console.log("🔐 Token error - proceeding as guest:", tokenError.message);
+      req.user = null;
+      return next();
     }
-
-    // Attach user to request object
-    req.user = user;
-    next();
   } catch (err) {
     console.error("Auth middleware error:", err.message);
-    
-    if (err.name === 'JsonWebTokenError') {
-      return res.status(401).json({ error: "Invalid token" });
-    }
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: "Token expired" });
-    }
-    if (err.name === 'MongoServerSelectionError') {
-      return res.status(503).json({ error: "Database connection failed" });
-    }
-    
-    return res.status(500).json({ 
-      error: "Authentication failed",
-      ...(process.env.NODE_ENV !== 'production' && { details: err.message })
-    });
+   
+    req.user = null;
+    return next();
   }
 };
 
 module.exports = authMiddleware;
-// const jwt = require("jsonwebtoken");
-// const User = require("../models/User");
-// const connectDB = require("../connection");
-
-// const authMiddleware = async (req, res, next) => {
-//   try {
-  
-//     await connectDB();
-
-//     const authHeader = req.headers.authorization;
-
-//     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//       return res
-//         .status(401)
-//         .json({ error: "Authorization header missing or invalid" });
-//     }
-
-//     const token = authHeader.split(" ")[1];
-
-//     // Verify the token
-//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-//     // Find the user by ID
-//     const user = await User.findById(decoded.id).select("-password");
-
-//     if (!user) {
-//       return res.status(401).json({ error: "User not found" });
-//     }
-
-//     // Attach user to request object
-//     req.user = user;
-
-//     next();
-//   } catch (err) {
-//     console.error("Auth middleware error:", err.message);
-//     if (err.name === 'JsonWebTokenError') {
-//       return res.status(401).json({ error: "Invalid token" });
-//     }
-//     if (err.name === 'TokenExpiredError') {
-//       return res.status(401).json({ error: "Token expired" });
-//     }
-//     return res.status(500).json({ error: "Authentication failed" });
-//   }
-// };
-
-// module.exports = authMiddleware;
