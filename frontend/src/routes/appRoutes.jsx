@@ -14,6 +14,7 @@ import AllVitals from "../pages/AllVitals";
 import About from "../pages/About";
 import HealthTips from "../pages/HealthTips";
 import Profile from "../pages/Profile";
+import SavedReports from "../pages/SavedReports";
 
 const routes = [
   {
@@ -42,6 +43,7 @@ const routes = [
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
   {path: "/all-vitals", element: <AllVitals /> },
+    {path: "/reports", element: <SavedReports /> },
 
   { path: "/about", element: <About /> },
   { path: "/unauthorized", element: <Unauthorized /> },

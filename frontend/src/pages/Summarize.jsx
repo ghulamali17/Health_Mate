@@ -78,35 +78,66 @@ const UploadReportPage = () => {
   };
 
   const handleFileUpload = async () => {
-    if (!file) {
-      setError("Please select a file first!");
+  if (!file) {
+    setError("Please select a file first!");
+    return;
+  }
+
+  setSummary("");
+  setLoading(true);
+  setError("");
+  setSuccess(false);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const token = localStorage.getItem("pos-token");
+    
+    if (!token) {
+      setError("Please login to save reports");
+      setLoading(false);
       return;
     }
 
-    setSummary("");
-    setLoading(true);
-    setError("");
-    setSuccess(false);
+    const response = await axios.post(
+      `${API_URL}/api/summarize`,
+      formData,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(`${API_URL}/api/summarize`, {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
-      const summaryText = data.summary || data.error;
-      setSummary(summaryText);
+    const data = response.data;
+    
+    if (data.isGuestMode) {
+      setError("⚠️ Report analyzed but not saved. Please login to save reports.");
+    } else if (data.reportId) {
+      console.log(" Report saved with ID:", data.reportId);
       setSuccess(true);
-    } catch (err) {
-      setError("File summarization failed. Please try again.");
-    } finally {
-      setLoading(false);
     }
-  };
+
+    const summaryText = data.summary || data.error;
+    setSummary(summaryText);
+    
+  } catch (err) {
+    console.error("Upload error:", err);
+    if (err.response?.status === 401) {
+      setError("Session expired. Please login again.");
+      // Optional: Redirect to login
+      // localStorage.removeItem("pos-token");
+      // window.location.href = "/login";
+      navigate("/login");
+    } else {
+      setError("File summarization failed. Please try again.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
 
   const resetForm = () => {
     setFile(null);
