@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 
 
+
 import { useNavigate } from "react-router-dom";
 import api from "../../config/api"; 
 import { useAuth } from "../../context/authContext";
@@ -550,7 +551,7 @@ const Dashboard = () => {
     </button>
 
     {/* New Card 2: Emergency Contacts */}
-    <button onClick={() => navigate("/emergency")} className="group cursor-pointer relative bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 hover:shadow-xl transition-all border border-rose-100 overflow-hidden">
+    <button onClick={() => navigate("/emergency-contacts")} className="group cursor-pointer relative bg-gradient-to-br from-rose-50 to-red-50 rounded-xl p-5 hover:shadow-xl transition-all border border-rose-100 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-rose-500/0 to-red-500/0 group-hover:from-rose-500/5 group-hover:to-red-500/5 transition-all"></div>
       <div className="relative flex items-center gap-4">
         <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
@@ -567,128 +568,170 @@ const Dashboard = () => {
 </div>
    
            {/* Main Content Grid */}
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             {/* Recent Reports */}
-             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
-               <div className="flex items-center justify-between mb-5">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                     <FileText className="w-5 h-5 text-white" />
-                   </div>
-                   <h2 className="text-lg font-bold text-gray-900">Recent Reports</h2>
-                 </div>
-                 <button onClick={() => navigate("/reports")} className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-                   View All
-                   <ArrowRight className="w-4 h-4" />
-                 </button>
-               </div>
-   
-               <div className="space-y-3">
-                 {recentReports.map((report) => (
-                   <div
-                     key={report._id}
-                     onClick={() => {
-                       setSelectedReport(report);
-                       setShowModal(true);
-                     }}
-                     className="group flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-gray-100"
-                   >
-                     <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-                       <FileText className="w-6 h-6 text-blue-600" />
-                     </div>
-                     <div className="flex-1 min-w-0">
-                       <p className="font-semibold text-gray-900 truncate mb-1">
-                         {report.fileName}
-                       </p>
-                       <div className="flex items-center gap-2 text-xs text-gray-500">
-                         <Calendar className="w-3 h-3" />
-                         <span>{new Date(report.uploadedAt).toLocaleDateString()}</span>
-                         <span className="text-gray-300">•</span>
-                         <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
-                           {report.reportType}
-                         </span>
-                       </div>
-                     </div>
-                     <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                   </div>
-                 ))}
-               </div>
-             </div>
-   
-             {/* Recent Vitals */}
-             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
-               <div className="flex items-center justify-between mb-5">
-                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
-                     <Heart className="w-5 h-5 text-white" />
-                   </div>
-                   <h2 className="text-lg font-bold text-gray-900">Recent Vitals</h2>
-                 </div>
-                 <button onClick={()=>navigate("/all-vitals")} className="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-                   View All
-                   <ArrowRight className="w-4 h-4" />
-                 </button>
-               </div>
-   
-               <div className="space-y-3">
-                 {vitals.slice(-3).reverse().map((vital) => (
-                   <div
-                     key={vital._id}
-                     className="p-4 bg-gradient-to-r from-gray-50 to-red-50/50 rounded-xl border border-gray-100"
-                   >
-                     <div className="flex items-center justify-between mb-3">
-                       <div className="flex items-center gap-2">
-                         <Calendar className="w-4 h-4 text-gray-400" />
-                         <p className="text-sm font-semibold text-gray-900">
-                           {new Date(vital.measuredAt).toLocaleDateString()}
-                         </p>
-                       </div>
-                       <div className="flex items-center gap-1 text-xs text-gray-500 bg-white px-2 py-1 rounded-lg">
-                         <Clock className="w-3 h-3" />
-                         {new Date(vital.measuredAt).toLocaleTimeString([], {
-                           hour: "2-digit",
-                           minute: "2-digit",
-                         })}
-                       </div>
-                     </div>
-   
-                     <div className="grid grid-cols-3 gap-3">
-                       <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl border border-red-100">
-                         <div className="flex items-center gap-2 mb-1">
-                           <Activity className="w-4 h-4 text-red-500" />
-                           <p className="text-xs font-medium text-gray-600">Blood Pressure</p>
-                         </div>
-                         <p className="text-lg font-bold text-gray-900">
-                           {vital.bloodPressure?.systolic || "--"}/
-                           {vital.bloodPressure?.diastolic || "--"}
-                         </p>
-                       </div>
-   
-                       <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border border-blue-100">
-                         <div className="flex items-center gap-2 mb-1">
-                           <Droplet className="w-4 h-4 text-blue-500" />
-                           <p className="text-xs font-medium text-gray-600">Blood Sugar</p>
-                         </div>
-                         <p className="text-lg font-bold text-gray-900">
-                           {vital.bloodSugar || "--"}
-                         </p>
-                       </div>
-   
-                       <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-xl border border-purple-100">
-                         <div className="flex items-center gap-2 mb-1">
-                           <Weight className="w-4 h-4 text-purple-500" />
-                           <p className="text-xs font-medium text-gray-600">Weight</p>
-                         </div>
-                         <p className="text-lg font-bold text-gray-900">
-                           {vital.weight || "--"} kg
-                         </p>
-                       </div>
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-           </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  {/* Recent Reports */}
+  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
+    <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
+          <FileText className="w-5 h-5 text-white" />
+        </div>
+        <h2 className="text-lg font-bold text-gray-900">Recent Reports</h2>
+      </div>
+      {recentReports.length > 0 && (
+        <button onClick={() => navigate("/reports")} className="text-sm text-blue-600 hover:text-blue-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+          View All
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+
+    {recentReports.length > 0 ? (
+      <div className="space-y-3">
+        {recentReports.map((report) => (
+          <div
+            key={report._id}
+            onClick={() => {
+              setSelectedReport(report);
+              setShowModal(true);
+            }}
+            className="group flex items-center gap-4 p-4 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-xl hover:shadow-md transition-all cursor-pointer border border-gray-100"
+          >
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+              <FileText className="w-6 h-6 text-blue-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-gray-900 truncate mb-1">
+                {report.fileName}
+              </p>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <Calendar className="w-3 h-3" />
+                <span>{new Date(report.uploadedAt).toLocaleDateString()}</span>
+                <span className="text-gray-300">•</span>
+                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
+                  {report.reportType}
+                </span>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="text-center py-8">
+        <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <FileText className="w-8 h-8 text-blue-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Reports Yet</h3>
+        <p className="text-gray-500 text-sm mb-4 max-w-sm mx-auto">
+          You haven't uploaded any medical reports yet. Start by uploading your first report to keep track of your health records.
+        </p>
+        <button
+          onClick={() => navigate("/reports")}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold text-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Upload First Report
+        </button>
+      </div>
+    )}
+  </div>
+
+  {/* Recent Vitals */}
+  <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/50">
+    <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-pink-600 rounded-xl flex items-center justify-center">
+          <Heart className="w-5 h-5 text-white" />
+        </div>
+        <h2 className="text-lg font-bold text-gray-900">Recent Vitals</h2>
+      </div>
+      {vitals.length > 0 && (
+        <button onClick={() => navigate("/all-vitals")} className="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+          View All
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+
+    {vitals.length > 0 ? (
+      <div className="space-y-3">
+        {vitals.slice(-3).reverse().map((vital) => (
+          <div
+            key={vital._id}
+            className="p-4 bg-gradient-to-r from-gray-50 to-red-50/50 rounded-xl border border-gray-100"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <p className="text-sm font-semibold text-gray-900">
+                  {new Date(vital.measuredAt).toLocaleDateString()}
+                </p>
+              </div>
+              <div className="flex items-center gap-1 text-xs text-gray-500 bg-white px-2 py-1 rounded-lg">
+                <Clock className="w-3 h-3" />
+                {new Date(vital.measuredAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-gradient-to-br from-red-50 to-pink-50 p-3 rounded-xl border border-red-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-red-500" />
+                  <p className="text-xs font-medium text-gray-600">Blood Pressure</p>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {vital.bloodPressure?.systolic || "--"}/
+                  {vital.bloodPressure?.diastolic || "--"}
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border border-blue-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <Droplet className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs font-medium text-gray-600">Blood Sugar</p>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {vital.bloodSugar || "--"}
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-xl border border-purple-100">
+                <div className="flex items-center gap-2 mb-1">
+                  <Weight className="w-4 h-4 text-purple-500" />
+                  <p className="text-xs font-medium text-gray-600">Weight</p>
+                </div>
+                <p className="text-lg font-bold text-gray-900">
+                  {vital.weight || "--"} kg
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="text-center py-8">
+        <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-pink-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Activity className="w-8 h-8 text-red-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">No Vitals Recorded</h3>
+        <p className="text-gray-500 text-sm mb-4 max-w-sm mx-auto">
+          Start tracking your health measurements. Record your first vitals to monitor your blood pressure, sugar levels, and more.
+        </p>
+        <button
+          onClick={() => navigate("/add-vitals")}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold text-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Record First Vitals
+        </button>
+      </div>
+    )}
+  </div>
+</div>
    
            {/* Enhanced Health Tip Banner */}
            <div className="relative bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 rounded-2xl p-6 shadow-2xl overflow-hidden">

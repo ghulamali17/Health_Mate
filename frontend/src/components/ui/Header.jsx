@@ -116,7 +116,7 @@ const Header = ({ toggleSidebar }) => {
                         </p>
                       </div>
                       <button
-                        onClick={() => handleNavigation("/")}
+                        onClick={() => handleNavigation("/dashboard")}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
                       >
                         <LayoutDashboard className="w-4 h-4 text-emerald-600" />

@@ -8,6 +8,7 @@
   const summarizeRouter = require("./routes/summarizeRoutes");
   const reportRoutes = require("./routes/reportRoutes");
   const emergencyContactsRoutes = require('./routes/emergencyContacts');
+  const familyMembersRoutes = require('./routes/familyMembers');
   const app = express();
 
   // CORS configuration
@@ -60,7 +61,7 @@
 
   app.use("/images", express.static("public/images"));
 
-  // verify required environment variables
+
   const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET'];
   const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar]);
 
@@ -79,6 +80,7 @@
   app.use("/api/summarize", summarizeRouter);
   app.use("/api/reports", reportRoutes);
   app.use('/api/emergency-contacts', emergencyContactsRoutes);
+  app.use('/api/family-members', familyMembersRoutes);
 
   // Root endpoint
   app.get("/", (req, res) => {

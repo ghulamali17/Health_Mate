@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const itemSchema = new mongoose.Schema({
+const vitalSchema = new mongoose.Schema({
   measuredAt: {
     type: Date,
     required: true,
@@ -13,14 +13,30 @@ const itemSchema = new mongoose.Schema({
   weight: Number,
   temperature: Number,
   heartRate: Number,
-  image: { type: String, default: "" },
   additionalNotes: { type: String, default: "" },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
+
+  forFamilyMember: {
+    type: Boolean,
+    default: false
+  },
+  familyMemberId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "FamilyMember",
+    default: null
+  },
+  familyMemberName: {
+    type: String,
+    default: null
+  }
 }, { timestamps: true });
 
-const itemModel = mongoose.model("Item", itemSchema);
-module.exports = itemModel;
+// Index for better performance
+vitalSchema.index({ user: 1, measuredAt: -1 });
+vitalSchema.index({ familyMemberId: 1, measuredAt: -1 });
+
+module.exports = mongoose.model("Vital", vitalSchema);

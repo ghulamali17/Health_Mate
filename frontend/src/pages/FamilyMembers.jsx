@@ -58,6 +58,7 @@ const FamilyMembers = () => {
 
   const navigate = useNavigate();
 
+  // Fetch family members on component mount
   useEffect(() => {
     fetchFamilyMembers();
   }, []);
@@ -65,130 +66,15 @@ const FamilyMembers = () => {
   const fetchFamilyMembers = async () => {
     try {
       setLoading(true);
-      // Mock data for demonstration - replace with actual API call
-      const mockData = [
-        {
-          _id: '1',
-          name: 'Ayesha Khan',
-          relationship: 'Mother',
-          phone: '+92 300 1234567',
-          email: 'ayesha@example.com',
-          dateOfBirth: '1965-03-15',
-          gender: 'Female',
-          bloodGroup: 'O+',
-          allergies: 'Penicillin',
-          medicalConditions: 'Hypertension'
-        },
-        {
-          _id: '2',
-          name: 'Ahmed Khan',
-          relationship: 'Father',
-          phone: '+92 300 7654321',
-          email: 'ahmed@example.com',
-          dateOfBirth: '1962-07-22',
-          gender: 'Male',
-          bloodGroup: 'A+',
-          allergies: 'None',
-          medicalConditions: 'Diabetes'
-        },
-        {
-          _id: '3',
-          name: 'Sara Khan',
-          relationship: 'Sister',
-          phone: '+92 300 1122334',
-          email: 'sara@example.com',
-          dateOfBirth: '1995-11-08',
-          gender: 'Female',
-          bloodGroup: 'B+',
-          allergies: 'Dust',
-          medicalConditions: 'Asthma'
-        }
-      ];
-      setFamilyMembers(mockData);
+      const response = await api.get('/api/family-members');
+      if (response.data.success) {
+        setFamilyMembers(response.data.data);
+      }
     } catch (error) {
       console.error('Error fetching family members:', error);
       toast.error('Failed to load family members');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleMemberSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // Mock save - replace with actual API call
-      if (editingMember) {
-        // Update existing member
-        const updatedMembers = familyMembers.map(member =>
-          member._id === editingMember._id 
-            ? { ...member, ...memberFormData }
-            : member
-        );
-        setFamilyMembers(updatedMembers);
-        toast.success('Family member updated successfully');
-      } else {
-        // Add new member
-        const newMember = {
-          _id: Date.now().toString(),
-          ...memberFormData,
-          createdAt: new Date()
-        };
-        setFamilyMembers(prev => [...prev, newMember]);
-        toast.success('Family member added successfully');
-      }
-      
-      setShowAddModal(false);
-      setEditingMember(null);
-      resetMemberForm();
-    } catch (error) {
-      console.error('Error saving family member:', error);
-      toast.error('Failed to save family member');
-    }
-  };
-
-  const handleVitalsSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedMember) return;
-
-    try {
-      // Mock vital save - replace with actual API call
-      const measuredAt = new Date(`${vitalsFormData.date}T${vitalsFormData.time}`);
-      
-      const payload = {
-        familyMemberId: selectedMember._id,
-        familyMemberName: selectedMember.name,
-        measuredAt,
-        bloodPressure: {
-          systolic: Number(vitalsFormData.bloodPressureSystolic) || undefined,
-          diastolic: Number(vitalsFormData.bloodPressureDiastolic) || undefined
-        },
-        bloodSugar: vitalsFormData.bloodSugar ? Number(vitalsFormData.bloodSugar) : undefined,
-        weight: vitalsFormData.weight ? Number(vitalsFormData.weight) : undefined,
-        temperature: vitalsFormData.temperature ? Number(vitalsFormData.temperature) : undefined,
-        heartRate: vitalsFormData.heartRate ? Number(vitalsFormData.heartRate) : undefined,
-        additionalNotes: vitalsFormData.notes
-      };
-
-      console.log('Saving vitals for:', selectedMember.name, payload);
-      toast.success(`Vitals recorded for ${selectedMember.name}`);
-      
-      setShowVitalsModal(false);
-      resetVitalsForm();
-    } catch (error) {
-      console.error('Error saving vitals:', error);
-      toast.error('Failed to save vitals');
-    }
-  };
-
-  const handleDeleteMember = async (memberId) => {
-    if (window.confirm('Are you sure you want to delete this family member?')) {
-      try {
-        setFamilyMembers(prev => prev.filter(member => member._id !== memberId));
-        toast.success('Family member deleted successfully');
-      } catch (error) {
-        console.error('Error deleting family member:', error);
-        toast.error('Failed to delete family member');
-      }
     }
   };
 
@@ -198,12 +84,12 @@ const FamilyMembers = () => {
       name: member.name,
       relationship: member.relationship,
       phone: member.phone,
-      email: member.email,
-      dateOfBirth: member.dateOfBirth,
+      email: member.email || '',
+      dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth).toISOString().split('T')[0] : '',
       gender: member.gender,
-      bloodGroup: member.bloodGroup,
-      allergies: member.allergies,
-      medicalConditions: member.medicalConditions
+      bloodGroup: member.bloodGroup || '',
+      allergies: member.allergies || '',
+      medicalConditions: member.medicalConditions || ''
     });
     setShowAddModal(true);
   };
@@ -211,6 +97,79 @@ const FamilyMembers = () => {
   const handleAddVitals = (member) => {
     setSelectedMember(member);
     setShowVitalsModal(true);
+  };
+
+  const handleMemberSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const url = editingMember 
+        ? `/api/family-members/${editingMember._id}`
+        : '/api/family-members';
+      
+      const method = editingMember ? 'put' : 'post';
+
+      const response = await api[method](url, memberFormData);
+
+      if (response.data.success) {
+        toast.success(editingMember ? 'Family member updated successfully' : 'Family member added successfully');
+        setShowAddModal(false);
+        setEditingMember(null);
+        resetMemberForm();
+        fetchFamilyMembers();
+      }
+    } catch (error) {
+      console.error('Error saving family member:', error);
+      toast.error('Failed to save family member');
+    }
+  };
+
+  const handleDeleteMember = async (memberId) => {
+    if (window.confirm('Are you sure you want to delete this family member?')) {
+      try {
+        await api.delete(`/api/family-members/${memberId}`);
+        toast.success('Family member deleted successfully');
+        fetchFamilyMembers();
+      } catch (error) {
+        console.error('Error deleting family member:', error);
+        toast.error('Failed to delete family member');
+      }
+    }
+  };
+
+  const handleVitalsSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedMember) return;
+
+    try {
+      const measuredAt = new Date(`${vitalsFormData.date}T${vitalsFormData.time}`);
+      
+      const payload = {
+        measuredAt,
+        bloodPressure: {
+          systolic: Number(vitalsFormData.bloodPressureSystolic) || undefined,
+          diastolic: Number(vitalsFormData.bloodPressureDiastolic) || undefined
+        },
+        bloodSugar: vitalsFormData.bloodSugar ? Number(vitalsFormData.bloodSugar) : undefined,
+        weight: vitalsFormData.weight ? Number(vitalsFormData.weight) : undefined,
+        temperature: vitalsFormData.temperature ? Number(vitalsFormData.temperature) : undefined,
+        heartRate: vitalsFormData.heartRate ? Number(vitalsFormData.heartRate) : undefined,
+        additionalNotes: vitalsFormData.notes,
+        forFamilyMember: true,
+        familyMemberId: selectedMember._id,
+        familyMemberName: selectedMember.name
+      };
+
+      const response = await api.post('/api/vitals/createitem', payload);
+      
+      if (response.data) {
+        toast.success(`Vitals recorded for ${selectedMember.name}`);
+        setShowVitalsModal(false);
+        resetVitalsForm();
+      }
+    } catch (error) {
+      console.error('Error saving vitals:', error);
+      toast.error('Failed to save vitals');
+    }
   };
 
   const resetMemberForm = () => {
@@ -247,6 +206,18 @@ const FamilyMembers = () => {
     setShowAddModal(true);
   };
 
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    setEditingMember(null);
+    resetMemberForm();
+  };
+
+  const closeVitalsModal = () => {
+    setShowVitalsModal(false);
+    setSelectedMember(null);
+    resetVitalsForm();
+  };
+
   const getRelationshipColor = (relationship) => {
     const colors = {
       'Mother': 'from-pink-500 to-rose-600',
@@ -261,6 +232,20 @@ const FamilyMembers = () => {
       'Grandfather': 'from-orange-500 to-amber-600'
     };
     return colors[relationship] || 'from-gray-500 to-slate-600';
+  };
+
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
   };
 
   if (loading) {
@@ -288,7 +273,7 @@ const FamilyMembers = () => {
             </div>
             <div className="flex gap-3">
               <button
-                onClick={() => navigate('/dashboard')}
+                onClick={() => navigate('/')}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-all"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -388,6 +373,7 @@ const FamilyMembers = () => {
                     <Calendar className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-700">
                       {new Date(member.dateOfBirth).toLocaleDateString()}
+                      {` (${calculateAge(member.dateOfBirth)} years)`}
                     </span>
                   </div>
                 )}
@@ -437,16 +423,35 @@ const FamilyMembers = () => {
           ))}
 
           {/* Add New Member Card */}
-          <div
-            onClick={openAddModal}
-            className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-dashed border-purple-200 p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[200px]"
-          >
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-3">
-              <Plus className="w-8 h-8 text-white" />
+          {familyMembers.length === 0 ? (
+            <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl flex items-center justify-center mb-4">
+                <Users className="w-10 h-10 text-purple-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Family Members Added</h3>
+              <p className="text-gray-600 mb-6 max-w-md">
+                Start by adding your first family member to track their health records and vitals.
+              </p>
+              <button
+                onClick={openAddModal}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+              >
+                <Plus className="w-5 h-5" />
+                Add Your First Family Member
+              </button>
             </div>
-            <h3 className="font-bold text-gray-900 text-lg mb-1">Add Family Member</h3>
-            <p className="text-gray-600 text-sm text-center">Click to add a new family member to track their health</p>
-          </div>
+          ) : (
+            <div
+              onClick={openAddModal}
+              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-dashed border-purple-200 p-6 shadow-lg hover:shadow-xl transition-all cursor-pointer group flex flex-col items-center justify-center min-h-[200px]"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform mb-3">
+                <Plus className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-lg mb-1">Add Family Member</h3>
+              <p className="text-gray-600 text-sm text-center">Click to add a new family member to track their health</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -459,7 +464,7 @@ const FamilyMembers = () => {
                 {editingMember ? 'Edit Family Member' : 'Add Family Member'}
               </h2>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={closeAddModal}
                 className="p-2 text-white hover:bg-white/20 rounded-xl transition-all"
               >
                 <X className="w-5 h-5" />
@@ -617,7 +622,7 @@ const FamilyMembers = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowAddModal(false)}
+                    onClick={closeAddModal}
                     className="flex-1 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-semibold"
                   >
                     Cancel
@@ -643,7 +648,7 @@ const FamilyMembers = () => {
                 </p>
               </div>
               <button
-                onClick={() => setShowVitalsModal(false)}
+                onClick={closeVitalsModal}
                 className="p-2 text-white hover:bg-white/20 rounded-xl transition-all"
               >
                 <X className="w-5 h-5" />

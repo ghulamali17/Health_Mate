@@ -66,7 +66,7 @@ function Login() {
         login(user);
         localStorage.setItem("pos-token", token);
         toast.success("Successfully logged in");
-        navigate("/");
+        navigate("/dashboard");
       } else if (message === "No record found") {
         toast.error("No user found with this email");
       } else if (message === "Incorrect password") {

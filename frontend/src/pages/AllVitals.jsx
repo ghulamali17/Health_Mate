@@ -13,9 +13,11 @@ import {
   ArrowLeft,
   Trash2,
   AlertCircle,
-  User
+  User,
+  Users
 } from "lucide-react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -25,6 +27,7 @@ function AllVitals() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCurrentUser();
@@ -89,7 +92,8 @@ function AllVitals() {
           v.additionalNotes?.toLowerCase().includes(q) ||
           String(v.bloodSugar).includes(q) ||
           String(v.weight).includes(q) ||
-          String(v.temperature).includes(q)
+          String(v.temperature).includes(q) ||
+          (v.forFamilyMember && v.familyMemberName?.toLowerCase().includes(q))
       )
     );
   };
@@ -123,6 +127,30 @@ function AllVitals() {
     ? (vitals.reduce((acc, v) => acc + (v.weight || 0), 0) / vitals.length).toFixed(1)
     : 0;
 
+  // Get badge color based on who the vitals belong to
+  const getPersonBadgeColor = (vital) => {
+    if (vital.forFamilyMember) {
+      return "bg-purple-100 text-purple-700 border-purple-200";
+    }
+    return "bg-blue-100 text-blue-700 border-blue-200";
+  };
+
+  // Get icon based on who the vitals belong to
+  const getPersonIcon = (vital) => {
+    if (vital.forFamilyMember) {
+      return <Users className="w-3 h-3" />;
+    }
+    return <User className="w-3 h-3" />;
+  };
+
+  // Get person name for display
+  const getPersonName = (vital) => {
+    if (vital.forFamilyMember) {
+      return vital.familyMemberName || "Family Member";
+    }
+    return "Myself";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
@@ -131,7 +159,7 @@ function AllVitals() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <button 
-                onClick={() => window.history.back()}
+                onClick={() => navigate("/dashboard")}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -141,7 +169,7 @@ function AllVitals() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">All Vitals Records</h1>
-                <p className="text-sm text-gray-500">Apni puri health history dekhen</p>
+                <p className="text-sm text-gray-500">Track health measurements for you and your family</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -201,7 +229,7 @@ function AllVitals() {
           <Search className="w-5 h-5 text-gray-400 absolute left-4 top-3.5" />
           <input
             type="text"
-            placeholder="Search by notes, sugar level, weight, temperature..."
+            placeholder="Search by person name, notes, sugar level, weight..."
             value={search}
             onChange={handleSearch}
             className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-transparent transition-all"
@@ -234,7 +262,10 @@ function AllVitals() {
             <p className="text-gray-500 text-sm mb-6">
               {search ? "Try a different search term" : "Start tracking your health by adding your first vital record"}
             </p>
-            <button onClick={()=>Navigate("/add-vitals")} className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-medium hover:from-red-600 hover:to-pink-600 transition-all shadow-md">
+            <button 
+              onClick={() => navigate("/add-vitals")} 
+              className="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-medium hover:from-red-600 hover:to-pink-600 transition-all shadow-md"
+            >
               Add First Vital
             </button>
           </div>
@@ -266,8 +297,14 @@ function AllVitals() {
                     <Trash2 className="w-4 h-4" />
                   </button>
 
-                  {/* Header: Date + Time */}
+                  {/* Header: Person Badge + Date + Time */}
                   <div className="mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getPersonBadgeColor(vital)}`}>
+                        {getPersonIcon(vital)}
+                        <span>{getPersonName(vital)}</span>
+                      </div>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
