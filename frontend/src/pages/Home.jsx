@@ -1,4 +1,4 @@
-import React from 'react';
+import {useState,useRef} from 'react';
 import { 
   Heart, 
   Activity, 
@@ -18,11 +18,44 @@ import {
   Upload,
   Brain,
   Zap,
-  TrendingUp
+  LogOut,
+  Bell,
+  ChevronRight,
+  LayoutDashboard,
+  User,
+  TrendingUp,
+  HomeIcon
 } from 'lucide-react';
+import useClickOutside from '../hooks/useClickOutside';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 const HealthMateLanding = () => {
+
+ 
   const navigate=useNavigate()
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [loadingUser, setLoadingUser] = useState(false);
+
+    const { user, logout } = useAuth();
+  
+    const dropdownRef = useRef(null);
+  
+    useClickOutside(dropdownRef, () => {
+      setIsDropdownOpen(false);
+    });
+  
+    const handleLogout = () => {
+      logout();
+      localStorage.removeItem("pos-token");
+      setIsDropdownOpen(false);
+      toast.success("Logged out successfully");
+      navigate("/login");
+    };
+  
+    const handleNavigation = (path) => {
+      navigate(path);
+      setIsDropdownOpen(false);
+    };
   const features = [
     {
       icon: <Activity className="w-6 h-6" />,
@@ -114,35 +147,115 @@ const HealthMateLanding = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
       {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-lg border-b border-green-100 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Heart className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                💚 HealthMate
-              </span>
-            </div>
-            
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-gray-700 hover:text-green-600 transition-colors font-medium">Features</a>
-              <a href="#how-it-works" className="text-gray-700 hover:text-green-600 transition-colors font-medium">How It Works</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-green-600 transition-colors font-medium">Stories</a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <button onClick={()=>navigate("/login")} className=" cursor-pointer px-5 py-2 text-gray-700 hover:text-green-600 font-medium transition-colors">
-                Sign In
-              </button>
-              <button className="px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg hover:scale-105 transition-all font-semibold">
-                Get Started Free
-              </button>
-            </div>
-          </div>
+     <nav className="bg-white/90 backdrop-blur-lg border-b border-green-100 sticky top-0 z-50 shadow-sm">
+  <div className="max-w-7xl mx-auto px-6 py-4">
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+          <Heart className="w-6 h-6 text-white" />
         </div>
-      </nav>
+        <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+          💚 HealthMate
+        </span>
+      </div>
+      
+      <div className="hidden md:flex items-center gap-8">
+        <a href="#features" className="text-gray-700 hover:text-green-600 transition-colors font-medium">Features</a>
+        <a href="#how-it-works" className="text-gray-700 hover:text-green-600 transition-colors font-medium">How It Works</a>
+        <a href="#testimonials" className="text-gray-700 hover:text-green-600 transition-colors font-medium">Stories</a>
+      </div>
+
+      <div className="flex items-center gap-3">
+       {
+        user && (
+           <button className="relative p-2.5 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-sm rounded-xl transition-all">
+          <Bell className="w-5 h-5 text-green-600" />
+          <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+            3
+          </span>
+        </button>
+        )
+       }
+  
+        {user ? (
+          <div ref={dropdownRef} className="relative">
+            <button
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-3 px-4 py-2.5 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-sm rounded-xl transition-all"
+            >
+              {loadingUser ? (
+                <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
+                  <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center font-bold text-white text-sm">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+              )}
+              <span className="text-sm font-semibold text-green-700 hidden md:block">
+                {loadingUser ? "Loading..." : user?.name || "Guest"}
+              </span>
+              <ChevronRight
+                className={`w-4 h-4 text-green-600 transition-transform ${
+                  isDropdownOpen ? "rotate-90" : ""
+                }`}
+              />
+            </button>
+
+            {isDropdownOpen && (
+              <div className="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-2xl border border-green-100 overflow-hidden z-50 animate-fadeIn">
+                <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 border-b border-green-100">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {user?.name || "Guest User"}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {user?.email || "Premium Member"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleNavigation("/dashboard")}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                >
+                  <LayoutDashboard className="w-4 h-4 text-green-600" />
+                  Dashboard
+                </button>
+                <button
+                  onClick={() => handleNavigation("/profile")}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors"
+                >
+                  <User className="w-4 h-4 text-green-600" />
+                  Profile Settings
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/login")}
+              className="px-4 cursor-pointer py-2.5 text-green-700 hover:text-green-800 font-medium transition-colors"
+            >
+              Login
+            </button>
+            <button
+              onClick={() => navigate("/signup")}
+              className="px-6 cursor-pointer py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+            >
+              Get Started
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</nav>
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-20 pb-32">

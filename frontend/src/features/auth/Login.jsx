@@ -90,7 +90,7 @@ function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col font-sans">
-      <Header user={user} loadingUser={loadingUser} />
+      {/* <Header user={user} loadingUser={loadingUser} /> */}
       <div className="flex-1 flex justify-center items-center px-4">
         <form
           onSubmit={handleSubmit(onSubmit)}
