@@ -1,10 +1,10 @@
 const app = require("./app");
 const connectDB = require("./connection");
 
-
+// For Vercel deployment - serverless function
 const server = async (req, res) => {
   try {
-   
+    // Connect to DB on first request (cold start)
     await connectDB();
     
     return app(req, res);
@@ -18,7 +18,7 @@ const server = async (req, res) => {
 };
 
 // For local development only
-if (process.env.NODE_ENV !== 'production') {
+if (require.main === module) {
   const PORT = process.env.PORT || 3001;
   
   const startServer = async () => {
