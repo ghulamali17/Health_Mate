@@ -1,34 +1,11 @@
 const app = require("./app");
 const connectDB = require("./connection");
 
-let isColdStart = true;
-let isConnected = false;
-
-async function initializeDatabase() {
-  try {
-    if (!isConnected) {
-      await connectDB();
-      isConnected = true;
-      console.log('✅ Database connection initialized');
-    }
-  } catch (error) {
-    console.error('❌ Database connection failed:', error);
-    isConnected = false;
-  }
-}
-
-// Initialize on cold start
-if (isColdStart) {
-  initializeDatabase();
-  isColdStart = false;
-}
 
 const server = async (req, res) => {
   try {
-    if (!isConnected) {
-      await connectDB();
-      isConnected = true;
-    }
+   
+    await connectDB();
     
     return app(req, res);
   } catch (error) {
@@ -40,7 +17,7 @@ const server = async (req, res) => {
   }
 };
 
-// For local development
+// For local development only
 if (process.env.NODE_ENV !== 'production') {
   const PORT = process.env.PORT || 3001;
   
@@ -49,7 +26,6 @@ if (process.env.NODE_ENV !== 'production') {
       await connectDB();
       app.listen(PORT, () => {
         console.log(`✅ Server is running at http://localhost:${PORT}`);
-        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       });
     } catch (error) {
       console.error('❌ Failed to start server:', error);
@@ -60,5 +36,5 @@ if (process.env.NODE_ENV !== 'production') {
   startServer();
 }
 
-// For Vercel deployment 
+// For Vercel deployment
 module.exports = server;
