@@ -4,15 +4,44 @@ const cloudinary = require("../utils/cloudinaryConfig");
 const upload = require("../middlewares/multerMiddleware");
 const connectDB = require("../connection");
 
-// create item
 const createItem = async (req, res) => {
   try {
     await connectDB();
 
+ 
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const {
+      measuredAt,
+      bloodPressure,
+      bloodSugar,
+      weight,
+      temperature,
+      heartRate,
+      additionalNotes,
+      forFamilyMember,
+      familyMemberId,
+      familyMemberName
+    } = req.body;
+
+    console.log('Creating vital for user:', req.user._id); // Debug log
+
     const item = await itemModel.create({
-      ...req.body,
-      user: req.user._id,
+      measuredAt,
+      bloodPressure,
+      bloodSugar,
+      weight,
+      temperature,
+      heartRate,
+      additionalNotes,
+      forFamilyMember: forFamilyMember || false,
+      familyMemberId: forFamilyMember ? familyMemberId : null,
+      familyMemberName: forFamilyMember ? familyMemberName : null,
+      user: req.user._id, // Use ONLY from auth middleware, NOT from request body
     });
+    
     res.status(201).json(item);
   } catch (err) {
     console.error("Item creation error:", err.message);
@@ -77,17 +106,40 @@ const getItemsByUserId = async (req, res) => {
   }
 };
 
-// current user
+// current user 
 const getItemsByCurrentUser = async (req, res) => {
   try {
     await connectDB();
 
-    //Find items by current user
-    const items = await itemModel.find({ user: req.user._id });
+    // Find items by current user
+    const items = await itemModel.find({ user: req.user._id })
+      .sort({ measuredAt: -1 });
     res.json(items);
   } catch (err) {
     console.error("Get current user items error:", err.message);
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Get vitals by family member
+const getVitalsByFamilyMember = async (req, res) => {
+  try {
+    await connectDB();
+
+    const { familyMemberId } = req.params;
+
+    const vitals = await itemModel.find({
+      user: req.user._id,
+      familyMemberId: familyMemberId
+    }).sort({ measuredAt: -1 });
+
+    res.json(vitals);
+  } catch (error) {
+    console.error('Get family member vitals error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch family member vitals',
+      details: error.message 
+    });
   }
 };
 
@@ -172,6 +224,7 @@ module.exports = {
   updateItem,
   deleteItem,
   getItemsByCurrentUser,
+  getVitalsByFamilyMember, 
   searchItems,
   uploadFileWithCloudinary,
 };

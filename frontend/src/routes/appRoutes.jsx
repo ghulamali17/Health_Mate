@@ -8,17 +8,17 @@ import Healthmate from "../pages/Healthmate";
 import AddVitals from "../pages/Vitals";
 import Dashboard from "../features/dashboard/Dashboard";
 import UploadReportPage from "../pages/Summarize";
-// import Create from "../pages/Create";
-// import Items from "../pages/Items";
+import Home from "../pages/Home";
 import AllVitals from "../pages/AllVitals";
 import About from "../pages/About";
 import HealthTips from "../pages/HealthTips";
 import Profile from "../pages/Profile";
 import SavedReports from "../pages/SavedReports";
-
+import EmergencyContacts from '../pages/EmergencyContacts';
+import FamilyMembers from "../pages/FamilyMembers";
 const routes = [
   {
-    path: "/",
+    path: "/dashboard",
     element: (
       <ProtectedRoutes requiredRole={["user", "admin"]}>
         <Dashboard />
@@ -33,8 +33,8 @@ const routes = [
      </ProtectedRoutes>
     ),
   },
-
-    { path: "/chat*", element: <Healthmate /> },
+  { path: "/", element: <Home /> },
+  { path: "/chat*", element: <Healthmate /> },
   { path: "/login*", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/add-vitals", element: <AddVitals /> },
@@ -42,9 +42,10 @@ const routes = [
   { path: "/summarize", element: <UploadReportPage /> },
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
-  {path: "/all-vitals", element: <AllVitals /> },
-    {path: "/reports", element: <SavedReports /> },
-
+  { path: "/all-vitals", element: <AllVitals /> },
+  { path: "/family-members", element: <FamilyMembers /> },
+  { path: "/reports", element: <SavedReports /> },
+  { path: "/emergency-contacts", element: <EmergencyContacts /> },
   { path: "/about", element: <About /> },
   { path: "/unauthorized", element: <Unauthorized /> },
   { path: "*", element: <NotFound /> },

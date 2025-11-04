@@ -222,7 +222,7 @@ const Dashboard = () => {
     {isDropdownOpen && (
       <div className="absolute left-0 top-12 mt-1 w-48 bg-white border border-gray-100 rounded-xl shadow-lg animate-fadeIn z-50">
         <button
-          onClick={() => handleNavigation("/")}
+          onClick={() => handleNavigation("/dashboard")}
           className="w-full cursor-pointer flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-t-xl transition-colors"
         >
           <LayoutDashboard className="w-4 h-4 text-gray-600" />

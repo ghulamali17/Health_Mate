@@ -1,4 +1,5 @@
 const express = require("express");
+const router = express.Router();
 const {
   createItem,
   getItems,
@@ -7,32 +8,17 @@ const {
   deleteItem,
   getItemsByCurrentUser,
   searchItems,
-  uploadFileWithCloudinary,
+  getVitalsByFamilyMember
 } = require("../controllers/vitalController");
-const authMiddleware = require("../middlewares/authMiddleware");
-const upload=require("../middlewares/multerMiddleware")
-const itemRouter = express.Router();
+const auth = require("../middlewares/authMiddleware");
 
-// create item
-itemRouter.post("/createitem", authMiddleware, createItem);
-itemRouter.get("/useritems", authMiddleware, getItemsByCurrentUser);
+router.post("/createitem", auth, createItem);
+router.get("/items", getItems);
+router.get("/useritems", auth, getItemsByCurrentUser);
+router.get("/family-member/:familyMemberId/vitals", auth, getVitalsByFamilyMember);
+router.get("/:id", getItemsByUserId);
+router.put("/updateitem/:id", updateItem);
+router.delete("/deleteitem/:id", auth, deleteItem);
+router.get("/search/items", searchItems);
 
-// get all items
-itemRouter.get("/getitems", getItems);
-
-// get items by user ID
-itemRouter.get("/getitems/:id", getItemsByUserId);
-
-// update item by ID
-itemRouter.put("/updateitem/:id", updateItem);
-
-// delete
-itemRouter.delete("/deleteItem/:id", deleteItem);
-
-// search items
-itemRouter.get("/search", searchItems);
-
-// upload file
-itemRouter.post("/upload", upload.single("image"), uploadFileWithCloudinary);
-
-module.exports = itemRouter;
+module.exports = router;

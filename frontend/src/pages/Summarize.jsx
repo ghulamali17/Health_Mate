@@ -9,6 +9,7 @@ import {
   User,
 } from "lucide-react";
 import axios from "axios";
+import Header from "../components/ui/Header";
 const UploadReportPage = () => {
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
   const [file, setFile] = useState(null);
@@ -149,39 +150,7 @@ const UploadReportPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => window.history.back()}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  💚 HealthMate
-                </h1>
-                <p className="text-sm text-gray-500">
-                  Upload & Analyze Medical Reports
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-                <User className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">
-                  {loadingUser ? "Loading..." : user?.name || "Guest"}
-                </span>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white font-semibold">
-                {user?.name ? user.name.charAt(0).toUpperCase() : "G"}
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+     <Header />
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
