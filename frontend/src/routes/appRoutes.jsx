@@ -3,7 +3,7 @@ import Signup from "../features/auth/SignUp";
 import Unauthorized from "../pages/Unauthorized";
 import ProtectedRoutes from "./ProtectedRoutes";
 import NotFound from "../pages/NotFound";
-import healthlens from "../pages/healthlens";
+import HealthLens from "../pages/HealthLens";
 import AddVitals from "../pages/Vitals";
 import Dashboard from "../features/dashboard/Dashboard";
 import UploadReportPage from "../pages/Summarize";
@@ -33,7 +33,7 @@ const routes = [
     ),
   },
   { path: "/", element: <Home /> },
-  { path: "/chat*", element: <healthlens /> },
+  { path: "/chat*", element: <HealthLens /> },
   { path: "/login*", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/add-vitals", element: <AddVitals /> },
