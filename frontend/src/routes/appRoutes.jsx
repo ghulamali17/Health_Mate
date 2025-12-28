@@ -1,10 +1,9 @@
-
 import Login from "../features/auth/Login";
 import Signup from "../features/auth/SignUp";
 import Unauthorized from "../pages/Unauthorized";
 import ProtectedRoutes from "./ProtectedRoutes";
 import NotFound from "../pages/NotFound";
-import Healthmate from "../pages/Healthmate";
+import healthlens from "../pages/healthlens";
 import AddVitals from "../pages/Vitals";
 import Dashboard from "../features/dashboard/Dashboard";
 import UploadReportPage from "../pages/Summarize";
@@ -14,7 +13,7 @@ import About from "../pages/About";
 import HealthTips from "../pages/HealthTips";
 import Profile from "../pages/Profile";
 import SavedReports from "../pages/SavedReports";
-import EmergencyContacts from '../pages/EmergencyContacts';
+import EmergencyContacts from "../pages/EmergencyContacts";
 import FamilyMembers from "../pages/FamilyMembers";
 const routes = [
   {
@@ -22,19 +21,19 @@ const routes = [
     element: (
       <ProtectedRoutes requiredRole={["user", "admin"]}>
         <Dashboard />
-     </ProtectedRoutes>
+      </ProtectedRoutes>
     ),
   },
-    {
+  {
     path: "/summarize",
     element: (
       <ProtectedRoutes requiredRole={["user", "admin"]}>
         <UploadReportPage />
-     </ProtectedRoutes>
+      </ProtectedRoutes>
     ),
   },
   { path: "/", element: <Home /> },
-  { path: "/chat*", element: <Healthmate /> },
+  { path: "/chat*", element: <healthlens /> },
   { path: "/login*", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/add-vitals", element: <AddVitals /> },

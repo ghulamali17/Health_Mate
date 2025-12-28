@@ -9,12 +9,12 @@ import {
   ChevronRight,
   User,
   LayoutDashboard,
-  HomeIcon
+  HomeIcon,
 } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 import useClickOutside from "../../hooks/useClickOutside";
-import api from "../../config/api"; 
-import { toast } from "react-toastify"; 
+import api from "../../config/api";
+import { toast } from "react-toastify";
 
 const Header = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -55,7 +55,7 @@ const Header = ({ toggleSidebar }) => {
                   <Menu className="w-5 h-5 text-white" />
                 </button>
               )}
-              
+
               <div className="relative">
                 <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
                   <Activity className="w-8 h-8 text-white" strokeWidth={2.5} />
@@ -64,7 +64,7 @@ const Header = ({ toggleSidebar }) => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                  HealthMate
+                  HealthLens
                   <Sparkles className="w-5 h-5 text-yellow-300" />
                 </h1>
                 <p className="text-emerald-100 text-sm font-medium">
@@ -116,7 +116,7 @@ const Header = ({ toggleSidebar }) => {
                           {user?.email || "Premium Member"}
                         </p>
                       </div>
-                        <button
+                      <button
                         onClick={() => handleNavigation("/")}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
                       >
@@ -151,7 +151,7 @@ const Header = ({ toggleSidebar }) => {
                 <div>
                   <button
                     onClick={() => navigate("/login")}
-                    className="px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-sm font-semibold text-white transition-all" 
+                    className="px-4 py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-sm font-semibold text-white transition-all"
                   >
                     Login
                   </button>

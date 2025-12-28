@@ -11,7 +11,7 @@ const About = () => {
           </div>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-          About <span className="text-green-600">HealthMate</span>
+          About <span className="text-green-600">HealthLens</span>
         </h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Your personal health companion — designed to help you understand,
@@ -36,7 +36,7 @@ const About = () => {
           {
             icon: <Weight className="w-6 h-6 text-purple-500" />,
             title: "Easy Report Summaries",
-            desc: "Upload lab or medical reports, and HealthMate will summarize them — saving time and reducing confusion.",
+            desc: "Upload lab or medical reports, and HealthLens will summarize them — saving time and reducing confusion.",
           },
           {
             icon: <Brain className="w-6 h-6 text-yellow-500" />,
@@ -71,7 +71,7 @@ const About = () => {
       <div className="max-w-4xl mx-auto bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-8 text-white shadow-lg text-center">
         <h2 className="text-2xl font-bold mb-3">Our Mission 🌿</h2>
         <p className="text-green-50 text-sm md:text-base leading-relaxed max-w-2xl mx-auto">
-          HealthMate aims to make health awareness accessible for everyone.
+          HealthLens aims to make health awareness accessible for everyone.
           Whether it’s understanding your reports, keeping track of vitals, or
           simply staying informed — we empower users to take charge of their
           wellbeing with confidence.
@@ -80,7 +80,10 @@ const About = () => {
 
       {/* Footer Note */}
       <div className="text-center mt-12 text-gray-500 text-sm">
-        <p>© {new Date().getFullYear()} HealthMate. Built with ❤️ for a healthier tomorrow.</p>
+        <p>
+          © {new Date().getFullYear()} HealthLens. Built with ❤️ for a healthier
+          tomorrow.
+        </p>
       </div>
     </div>
   );

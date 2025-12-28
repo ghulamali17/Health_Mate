@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
-const sendEmail = require("../utils/sendEmail");
 const connectDB = require("../connection");
 
 // Login
@@ -10,7 +9,7 @@ const login = async (req, res) => {
 
   try {
     await connectDB();
-    
+
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -49,7 +48,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
   try {
     await connectDB();
-    
+
     const { name, email, password, profileImage } = req.body;
 
     // Validate input
@@ -69,7 +68,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       profileImage,
     });
-    
+
     // Don't send password back
     const userResponse = {
       id: user._id,
@@ -77,10 +76,10 @@ const register = async (req, res) => {
       email: user.email,
       profileImage: user.profileImage,
     };
-    
-    res.status(201).json({ 
-      message: "User registered successfully", 
-      user: userResponse 
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userResponse,
     });
   } catch (err) {
     console.error("Register error:", err);
@@ -92,9 +91,9 @@ const register = async (req, res) => {
 const getCurrentUser = async (req, res) => {
   try {
     await connectDB();
-    
+
     const token = req.headers.authorization?.split(" ")[1];
-    
+
     if (!token) {
       return res.status(401).json({ error: "No token provided" });
     }
@@ -109,36 +108,15 @@ const getCurrentUser = async (req, res) => {
     res.json(user);
   } catch (err) {
     console.error("Get current user error:", err);
-    
-    if (err.name === 'JsonWebTokenError') {
+
+    if (err.name === "JsonWebTokenError") {
       return res.status(401).json({ error: "Invalid token" });
     }
-    if (err.name === 'TokenExpiredError') {
+    if (err.name === "TokenExpiredError") {
       return res.status(401).json({ error: "Token expired" });
     }
-    
+
     res.status(500).json({ error: "Failed to get user" });
-  }
-};
-
-// Mail sending controller
-const sendWelcomeEmail = async (req, res) => {
-  const { email, name } = req.body;
-
-  try {
-    if (!email || !name) {
-      return res.status(400).json({ error: "Email and name are required" });
-    }
-    
-    await sendEmail(
-      email,
-      "Welcome to HealthMate",
-      `<p>Hi <b>${name}</b>, your account has been created successfully.</p>`
-    );
-    res.status(200).json({ message: "Email sent successfully" });
-  } catch (err) {
-    console.error("Email error:", err.message);
-    res.status(500).json({ error: "Failed to send email" });
   }
 };
 
@@ -146,5 +124,4 @@ module.exports = {
   register,
   login,
   getCurrentUser,
-  sendWelcomeEmail,
 };

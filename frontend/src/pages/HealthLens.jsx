@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,8 +16,8 @@ import {
 } from "../store/slices/sessionSlice";
 import "./Styles.css";
 
-const Healthmate = () => {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const HealthLens = () => {
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,15 +30,21 @@ const Healthmate = () => {
   const textareaRef = useRef(null);
 
   const { user: authUser } = useAuth();
-  
+
   // Redux hooks
   const dispatch = useDispatch();
-  const { sessionId, sessions, isLoading: sessionLoading } = useSelector((state) => state.session);
+  const {
+    sessionId,
+    sessions,
+    isLoading: sessionLoading,
+  } = useSelector((state) => state.session);
 
   // Generate session ID on component mount
   useEffect(() => {
     if (!sessionId) {
-      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const newSessionId = `session_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
       dispatch(setSessionId(newSessionId));
     }
   }, [dispatch, sessionId]);
@@ -59,7 +62,10 @@ const Healthmate = () => {
         });
         setUser(response.data);
       } catch (err) {
-        console.error("Failed to fetch user:", err.response?.data || err.message);
+        console.error(
+          "Failed to fetch user:",
+          err.response?.data || err.message
+        );
       } finally {
         setLoadingUser(false);
       }
@@ -72,7 +78,9 @@ const Healthmate = () => {
     if (!user) return;
     try {
       dispatch(setSessionLoading(true));
-      const response = await axios.get(`${API_URL}/api/chat/sessions/${user._id}`);
+      const response = await axios.get(
+        `${API_URL}/api/chat/sessions/${user._id}`
+      );
       dispatch(setSessions(response.data.sessions || []));
     } catch (err) {
       console.error("Failed to fetch sessions:", err);
@@ -88,11 +96,13 @@ const Healthmate = () => {
         `${API_URL}/api/chat/history/${user._id}/${sessionId}`
       );
       setConversation(response.data.messages || []);
-      
+
       // Get fresh sessions state
-      const currentSessionsResponse = await axios.get(`${API_URL}/api/chat/sessions/${user._id}`);
+      const currentSessionsResponse = await axios.get(
+        `${API_URL}/api/chat/sessions/${user._id}`
+      );
       const currentSession = currentSessionsResponse.data.sessions?.find(
-        session => session.sessionId === sessionId
+        (session) => session.sessionId === sessionId
       );
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
@@ -142,8 +152,10 @@ const Healthmate = () => {
         `${API_URL}/api/chat/history/${user._id}/${selectedSessionId}`
       );
       setConversation(response.data.messages || []);
-      
-      const currentSession = sessions.find(session => session.sessionId === selectedSessionId);
+
+      const currentSession = sessions.find(
+        (session) => session.sessionId === selectedSessionId
+      );
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
       }
@@ -153,18 +165,20 @@ const Healthmate = () => {
   };
 
   const startNewSession = () => {
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const newSessionId = `session_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
     dispatch(setSessionId(newSessionId));
     dispatch(setCurrentSession(null));
     setConversation([]);
     setIsSidebarOpen(false);
-    
+
     // Add new session to Redux store
     const newSession = {
       sessionId: newSessionId,
       createdAt: new Date().toISOString(),
       messageCount: 0,
-      title: "New Chat"
+      title: "New Chat",
     };
     dispatch(addSession(newSession));
   };
@@ -172,9 +186,11 @@ const Healthmate = () => {
   const deleteSession = async (sessionIdToDelete) => {
     if (!user) return;
     try {
-      await axios.delete(`${API_URL}/api/chat/session/${user._id}/${sessionIdToDelete}`);
+      await axios.delete(
+        `${API_URL}/api/chat/session/${user._id}/${sessionIdToDelete}`
+      );
       dispatch(removeSession(sessionIdToDelete));
-      
+
       if (sessionIdToDelete === sessionId) {
         startNewSession();
       }
@@ -183,68 +199,69 @@ const Healthmate = () => {
     }
   };
 
- const handleTextSubmit = async (e) => {
-  if (e) e.preventDefault();
-  if (!prompt.trim() || loading) return;
+  const handleTextSubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!prompt.trim() || loading) return;
 
-  const userMessage = { 
-    type: "user", 
-    text: prompt, 
-    timestamp: new Date().toISOString() 
+    const userMessage = {
+      type: "user",
+      text: prompt,
+      timestamp: new Date().toISOString(),
+    };
+
+    const updatedConversation = [...conversation, userMessage];
+    setConversation(updatedConversation);
+    await saveChatMessage(userMessage);
+
+    setError("");
+    setResponse("");
+    setLoading(true);
+    const currentPrompt = prompt;
+    setPrompt("");
+
+    try {
+      const res = await fetch(`${API_URL}/api/healthlens`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: currentPrompt }),
+      });
+
+      const data = await res.json();
+      const aiResponse = data.text || "No response.";
+      setResponse(aiResponse);
+
+      const assistantMessage = {
+        type: "assistant",
+        text: aiResponse,
+        timestamp: new Date().toISOString(),
+      };
+
+      const finalConversation = [...updatedConversation, assistantMessage];
+      setConversation(finalConversation);
+      await saveChatMessage(assistantMessage);
+      await fetchSessions();
+    } catch (err) {
+      const errorMsg = "Something went wrong. Check your network.";
+      setError(errorMsg);
+      const errorMessage = {
+        type: "error",
+        text: errorMsg,
+        timestamp: new Date().toISOString(),
+      };
+
+      const errorConversation = [...updatedConversation, errorMessage];
+      setConversation(errorConversation);
+      await saveChatMessage(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  const updatedConversation = [...conversation, userMessage];
-  setConversation(updatedConversation);
-  await saveChatMessage(userMessage);
-
-  setError("");
-  setResponse("");
-  setLoading(true);
-  const currentPrompt = prompt;
-  setPrompt("");
-
-  try {
-    const res = await fetch(`${API_URL}/api/healthmate`, { 
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: currentPrompt }),
-    });
-
-    const data = await res.json();
-    const aiResponse = data.text || "No response.";
-    setResponse(aiResponse);
-    
-    const assistantMessage = { 
-      type: "assistant", 
-      text: aiResponse, 
-      timestamp: new Date().toISOString() 
-    };
-    
-    const finalConversation = [...updatedConversation, assistantMessage];
-    setConversation(finalConversation);
-    await saveChatMessage(assistantMessage);
-    await fetchSessions();
-  } catch (err) {
-    const errorMsg = "Something went wrong. Check your network.";
-    setError(errorMsg);
-    const errorMessage = { 
-      type: "error", 
-      text: errorMsg, 
-      timestamp: new Date().toISOString() 
-    };
-    
-    const errorConversation = [...updatedConversation, errorMessage];
-    setConversation(errorConversation);
-    await saveChatMessage(errorMessage);
-  } finally {
-    setLoading(false);
-  }
-};
   const handleTextareaChange = (e) => {
     setPrompt(e.target.value);
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+      textareaRef.current.style.height =
+        textareaRef.current.scrollHeight + "px";
     }
   };
 
@@ -284,4 +301,4 @@ const Healthmate = () => {
   );
 };
 
-export default Healthmate;
+export default HealthLens;

@@ -1,5 +1,12 @@
 import React from "react";
-import { Activity, Heart, Droplet, Weight, Thermometer, Leaf } from "lucide-react";
+import {
+  Activity,
+  Heart,
+  Droplet,
+  Weight,
+  Thermometer,
+  Leaf,
+} from "lucide-react";
 
 const HealthTips = () => {
   return (
@@ -82,7 +89,9 @@ const HealthTips = () => {
 
       {/* Footer */}
       <div className="text-center mt-10 text-gray-500 text-sm">
-        <p>© {new Date().getFullYear()} HealthMate — Healthy habits start here.</p>
+        <p>
+          © {new Date().getFullYear()} healthlens — Healthy habits start here.
+        </p>
       </div>
     </div>
   );

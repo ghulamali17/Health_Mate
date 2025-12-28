@@ -26,7 +26,10 @@ function Profile() {
         const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
-        console.error("Failed to fetch user profile:", err.response?.data || err.message);
+        console.error(
+          "Failed to fetch user profile:",
+          err.response?.data || err.message
+        );
         if (err.response?.status === 401) {
           navigate("/login");
         }
@@ -39,10 +42,10 @@ function Profile() {
   }, [navigate]);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -63,7 +66,7 @@ function Profile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-white font-sans">
       <Header user={user} loadingUser={loading} />
-      
+
       <div className="flex justify-center items-start py-8 px-4">
         <div className="w-full max-w-2xl">
           <div className="bg-white rounded-3xl shadow-lg border border-green-100 p-8 space-y-6">
@@ -71,8 +74,8 @@ function Profile() {
             <div className="text-center space-y-2">
               <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-white shadow-lg">
                 {user?.profileImage ? (
-                  <img 
-                    src={user.profileImage} 
+                  <img
+                    src={user.profileImage}
                     alt={user.name}
                     className="w-full h-full rounded-full object-cover"
                   />
@@ -81,7 +84,9 @@ function Profile() {
                 )}
               </div>
               <h2 className="text-3xl font-bold text-gray-900">My Profile</h2>
-              <p className="text-gray-600">Welcome to your HealthMate profile</p>
+              <p className="text-gray-600">
+                Welcome to your healthlens profile
+              </p>
             </div>
 
             {/* Profile Information */}
@@ -120,7 +125,9 @@ function Profile() {
                     Member Since
                   </label>
                   <div className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-700">
-                    {user?.createdAt ? formatDate(user.createdAt) : "Not available"}
+                    {user?.createdAt
+                      ? formatDate(user.createdAt)
+                      : "Not available"}
                   </div>
                 </div>
 
@@ -144,20 +151,44 @@ function Profile() {
                   {user?.profileImage ? (
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="w-5 h-5 text-green-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       </div>
-                      <span className="text-green-700 font-medium">Profile image uploaded</span>
+                      <span className="text-green-700 font-medium">
+                        Profile image uploaded
+                      </span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        <svg
+                          className="w-5 h-5 text-yellow-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                          />
                         </svg>
                       </div>
-                      <span className="text-yellow-700">No profile image uploaded</span>
+                      <span className="text-yellow-700">
+                        No profile image uploaded
+                      </span>
                     </div>
                   )}
                 </div>

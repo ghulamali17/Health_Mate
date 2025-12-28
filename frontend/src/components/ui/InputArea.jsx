@@ -44,8 +44,8 @@ const InputArea = ({
               onClick={handleTextSubmit}
               disabled={loading || !prompt.trim()}
               className={`flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg transition-all ${
-                loading || !prompt.trim() 
-                  ? "opacity-40 cursor-not-allowed" 
+                loading || !prompt.trim()
+                  ? "opacity-40 cursor-not-allowed"
                   : "opacity-100 hover:from-green-600 hover:to-green-700"
               }`}
             >
@@ -57,9 +57,10 @@ const InputArea = ({
             </button>
           </div>
         </div>
-        
+
         <p className="text-xs text-gray-500 text-center mt-3">
-          HealthMate may produce inaccurate information. Please verify important details with healthcare professionals.
+          HealthLens may produce inaccurate information. Please verify important
+          details with healthcare professionals.
         </p>
       </div>
     </div>
