@@ -15,8 +15,7 @@ const app = express();
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      "https://health-mate-pearl.vercel.app",
-      "https://health-mate-s6gc.vercel.app",
+      "https://health-lenss.vercel.app",
       "http://localhost:5173",
     ];
 
