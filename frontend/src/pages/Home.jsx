@@ -161,8 +161,8 @@ const healthlensLanding = () => {
               <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Heart className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                💚 healthlens
+              <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                💚 HealthLens
               </span>
             </div>
 
@@ -201,7 +201,7 @@ const healthlensLanding = () => {
                 <div ref={dropdownRef} className="relative">
                   <button
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-3 px-4 py-2.5 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-sm rounded-xl transition-all"
+                    className="flex items-center gap-3 px-2 md:px-4 py-2.5 bg-green-500/10 hover:bg-green-500/20 backdrop-blur-sm rounded-xl transition-all"
                   >
                     {loadingUser ? (
                       <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">
@@ -352,11 +352,13 @@ const healthlensLanding = () => {
                   <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border-2 border-green-100 hover:border-green-300 transition-all">
                     <div className="flex items-center gap-2 mb-3">
                       <Activity className="w-5 h-5 text-green-600" />
-                      <span className="text-xs font-semibold text-gray-600 uppercase">
+                      <span className="text-xs md:text-sm font-semibold text-gray-600 uppercase">
                         BP
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">120/80</p>
+                    <p className="text-xl md:text-3xl font-bold text-gray-900">
+                      120/80
+                    </p>
                     <p className="text-xs text-green-600 font-medium mt-1">
                       Normal ✓
                     </p>
@@ -369,7 +371,9 @@ const healthlensLanding = () => {
                         Sugar
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">95</p>
+                    <p className="text-xl md:text-3xl font-bold text-gray-900">
+                      95
+                    </p>
                     <p className="text-xs text-blue-600 font-medium mt-1">
                       Perfect ✓
                     </p>
@@ -382,7 +386,9 @@ const healthlensLanding = () => {
                         Weight
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">72 kg</p>
+                    <p className="text-xl md:text-3xl font-bold text-gray-900">
+                      72 kg
+                    </p>
                     <p className="text-xs text-purple-600 font-medium mt-1">
                       Stable ✓
                     </p>
@@ -395,7 +401,9 @@ const healthlensLanding = () => {
                         Heart
                       </span>
                     </div>
-                    <p className="text-2xl font-bold text-gray-900">72 bpm</p>
+                    <p className="text-xl md:text-3xl font-bold text-gray-900">
+                      72 bpm
+                    </p>
                     <p className="text-xs text-red-600 font-medium mt-1">
                       Healthy ✓
                     </p>

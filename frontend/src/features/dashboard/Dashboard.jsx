@@ -748,7 +748,7 @@ const Dashboard = () => {
                               Blood Pressure
                             </p>
                           </div>
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-sm md:text-lg font-bold text-gray-900">
                             {vital.bloodPressure?.systolic || "--"}/
                             {vital.bloodPressure?.diastolic || "--"}
                           </p>
@@ -757,11 +757,11 @@ const Dashboard = () => {
                         <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-3 rounded-xl border border-blue-100">
                           <div className="flex items-center gap-2 mb-1">
                             <Droplet className="w-4 h-4 text-blue-500" />
-                            <p className="text-xs font-medium text-gray-600">
+                            <p className="text-xs md:text-sm font-medium text-gray-600">
                               Blood Sugar
                             </p>
                           </div>
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-sm md:text-lg font-bold text-gray-900">
                             {vital.bloodSugar || "--"}
                           </p>
                         </div>
@@ -769,11 +769,11 @@ const Dashboard = () => {
                         <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-3 rounded-xl border border-purple-100">
                           <div className="flex items-center gap-2 mb-1">
                             <Weight className="w-4 h-4 text-purple-500" />
-                            <p className="text-xs font-medium text-gray-600">
+                            <p className="text-xs md:text-sm font-medium text-gray-600">
                               Weight
                             </p>
                           </div>
-                          <p className="text-lg font-bold text-gray-900">
+                          <p className="text-sm md:text-lg font-bold text-gray-900">
                             {vital.weight || "--"} kg
                           </p>
                         </div>
