@@ -16,12 +16,20 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       "https://health-lenss.vercel.app",
+      "https://health-lens.vercel.app",
       "http://localhost:5173",
+      "http://localhost:3000",
     ];
 
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // Check if origin matches allowed origins or is a Vercel preview deployment
+    const isAllowed =
+      allowedOrigins.indexOf(origin) !== -1 ||
+      origin.match(/^https:\/\/.*\.vercel\.app$/);
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log("CORS blocked for origin:", origin);
