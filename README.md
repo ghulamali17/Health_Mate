@@ -58,8 +58,8 @@ HealthLens is a web app that makes managing your health simple. Upload medical r
 1. **Clone the repository**
 
 ```bash
-git clone <your-repo-url>
-cd hackathonn
+git clone https://github.com/ghulamali17/HealthLens
+cd HealthLens
 ```
 
 2. **Install backend dependencies**
