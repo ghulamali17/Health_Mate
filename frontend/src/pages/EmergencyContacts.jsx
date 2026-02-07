@@ -170,7 +170,7 @@ const EmergencyContacts = () => {
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-5">
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-[40] px-6 py-5">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex items-center gap-5">
@@ -501,7 +501,7 @@ const EmergencyContacts = () => {
 
       {/* Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-[1000] animate-fadeIn">
           <div className="bg-white rounded-[2.5rem] max-w-xl w-full max-h-[90vh] overflow-hidden shadow-2xl border border-slate-200">
             <div className="p-8 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">

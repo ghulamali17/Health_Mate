@@ -10,6 +10,7 @@ import {
   User,
   LayoutDashboard,
   Clock,
+  Home,
 } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 import useClickOutside from "../../hooks/useClickOutside";
@@ -47,7 +48,7 @@ const Header = ({ toggleSidebar }) => {
 
   return (
     <header
-      className={`sticky top-0 z-[100] transition-all duration-300 ${
+      className={`sticky top-0 z-[990] transition-all duration-300 ${
         scrolled
           ? "bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 shadow-sm"
           : "bg-white border-b border-slate-100 py-4"
@@ -110,17 +111,17 @@ const Header = ({ toggleSidebar }) => {
               <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-3 pl-1.5 pr-4 py-1.5 bg-white border border-slate-200/60 rounded-2xl hover:border-primary/40 hover:shadow-lg hover:shadow-slate-200/20 transition-all duration-300 group min-w-[125px]"
+                  className="flex items-center gap-1.5 sm:gap-3 pl-1.5 pr-1.5 sm:pr-4 py-1.5 bg-white border border-slate-200/60 rounded-2xl hover:border-primary/40 hover:shadow-lg hover:shadow-slate-200/20 transition-all duration-300 group min-w-0 sm:min-w-[125px]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-slate-900 rounded-[12px] flex items-center justify-center font-bold text-white text-[11px] shadow-sm ring-4 ring-transparent group-hover:ring-primary/5 transition-all duration-500">
+                    <div className="w-8 h-8 bg-slate-900 rounded-[12px] flex items-center justify-center font-bold text-white text-[11px] shadow-sm ring-4 ring-transparent group-hover:ring-primary/5 transition-all duration-500 flex-shrink-0">
                       {user?.name?.charAt(0).toUpperCase()}
                     </div>
-                    <span className="text-[13px] font-bold text-slate-800 tracking-tight group-hover:text-primary transition-colors">
+                    <span className="hidden sm:block text-[13px] font-bold text-slate-800 tracking-tight group-hover:text-primary transition-colors truncate max-w-[80px]">
                       {user?.name?.split(" ")[0]}
                     </span>
                   </div>
-                  <div className="flex-1 flex justify-end">
+                  <div className="hidden sm:flex flex-1 justify-end ml-1">
                     <ChevronRight
                       className={`w-3.5 h-3.5 text-slate-300 group-hover:text-primary transition-all duration-300 ${isDropdownOpen ? "rotate-90" : ""}`}
                     />
@@ -141,6 +142,12 @@ const Header = ({ toggleSidebar }) => {
                       </div>
                     </div>
                     <div className="space-y-1">
+                      <button
+                        onClick={() => handleNavigation("/")}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-slate-100"
+                      >
+                        <Home className="w-4 h-4 opacity-50" /> Home
+                      </button>
                       <button
                         onClick={() => handleNavigation("/profile")}
                         className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-slate-100"

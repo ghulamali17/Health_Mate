@@ -357,20 +357,20 @@ const FamilyMembers = () => {
 
       {/* Member Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-[2rem] max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[1000] animate-fadeIn">
+          <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] max-w-lg w-full shadow-2xl overflow-hidden border border-slate-200">
+            <div className="p-5 sm:p-8 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                 {editingMember ? "Update Member" : "New Family Member"}
               </h2>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-2 text-slate-400 hover:text-slate-900"
+                className="p-2 text-slate-400 hover:text-slate-900 transition-colors"
               >
-                <X />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
-            <div className="p-8 space-y-6">
+            <div className="p-5 sm:p-8 space-y-6 max-h-[calc(95vh-100px)] overflow-y-auto custom-scrollbar">
               <form onSubmit={handleMemberSubmit} className="space-y-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
@@ -390,7 +390,7 @@ const FamilyMembers = () => {
                     placeholder="e.g. Sarah Jenkins"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                       Relationship
@@ -403,7 +403,7 @@ const FamilyMembers = () => {
                           relationship: e.target.value,
                         })
                       }
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold focus:border-primary outline-none"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold focus:border-primary outline-none text-sm"
                     >
                       {[
                         "Mother",
@@ -434,7 +434,7 @@ const FamilyMembers = () => {
                           gender: e.target.value,
                         })
                       }
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold focus:border-primary outline-none"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold focus:border-primary outline-none text-sm"
                     >
                       {["Female", "Male", "Other"].map((g) => (
                         <option key={g} value={g}>
@@ -462,7 +462,7 @@ const FamilyMembers = () => {
                     placeholder="+1 (555) 000-0000"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">
                       Birth Date (For Age)
@@ -476,7 +476,7 @@ const FamilyMembers = () => {
                           dateOfBirth: e.target.value,
                         })
                       }
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold outline-none"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold outline-none text-sm"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -491,7 +491,7 @@ const FamilyMembers = () => {
                           bloodGroup: e.target.value,
                         })
                       }
-                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold outline-none"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 font-bold outline-none text-sm"
                     >
                       <option value="">Select Group</option>
                       {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(
@@ -518,30 +518,30 @@ const FamilyMembers = () => {
 
       {/* Vitals Modal */}
       {showVitalsModal && selectedMember && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-[2.5rem] max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-[1000] animate-fadeIn">
+          <div className="bg-white rounded-[1.5rem] sm:rounded-[2.5rem] max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden">
+            <div className="p-5 sm:p-8 border-b border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center">
-                  <Activity className="w-6 h-6" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Activity className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-bold text-slate-900 truncate">
                     Add Vitals
                   </h2>
-                  <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                  <span className="text-[9px] sm:text-[10px] font-bold text-primary uppercase tracking-widest truncate block">
                     Recording for {selectedMember.name}
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setShowVitalsModal(false)}
-                className="p-2 text-slate-400 hover:text-slate-900"
+                className="p-2 text-slate-400 hover:text-slate-900 transition-colors"
               >
-                <X />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
-            <div className="p-8">
+            <div className="p-5 sm:p-8 max-h-[calc(95vh-100px)] overflow-y-auto custom-scrollbar">
               <form onSubmit={handleVitalsSubmit} className="space-y-8">
                 {/* Core Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
