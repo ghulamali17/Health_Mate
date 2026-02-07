@@ -20,10 +20,6 @@ import {
   Menu,
 } from "lucide-react";
 
-/**
- * Unified Navbar used across the entire application.
- * Automatically adapts links based on whether the user is on the landing page or internal pages.
- */
 const Navbar = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,7 +55,6 @@ const Navbar = ({ toggleSidebar }) => {
     setIsDropdownOpen(false);
   };
 
-  // Define navigation links based on page context
   const landingLinks = [
     { label: "Features", href: "#features" },
     { label: "How it Works", href: "#how-it-works" },
@@ -84,7 +79,7 @@ const Navbar = ({ toggleSidebar }) => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Left: Menu Toggle (Internal) + Logo */}
+        {/* Left */}
         <div className="flex items-center gap-4">
           {!isLandingPage && toggleSidebar && (
             <button
@@ -108,7 +103,7 @@ const Navbar = ({ toggleSidebar }) => {
           </div>
         </div>
 
-        {/* Center: Navigation Links */}
+        {/* Center*/}
         <div className="hidden md:flex items-center gap-8">
           {isLandingPage
             ? landingLinks.map((link) => (
@@ -136,7 +131,7 @@ const Navbar = ({ toggleSidebar }) => {
               ))}
         </div>
 
-        {/* Right: Notifications + User Profile / Auth */}
+        {/* Right */}
         <div className="flex items-center gap-4">
           {!isLandingPage && (
             <button className="relative p-2 text-slate-400 hover:text-primary transition-all">
