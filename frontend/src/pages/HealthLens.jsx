@@ -21,13 +21,11 @@ const HealthLens = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [conversation, setConversation] = useState([]);
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const scrollRef = useRef(null);
   const textareaRef = useRef(null);
 
-  const { user: authUser } = useAuth();
+  const { user } = useAuth();
 
   // Redux hooks
   const dispatch = useDispatch();
@@ -46,26 +44,6 @@ const HealthLens = () => {
       dispatch(setSessionId(newSessionId));
     }
   }, [dispatch, sessionId]);
-
-  // Fetch current user
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error(
-          "Failed to fetch user:",
-          err.response?.data || err.message,
-        );
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   const fetchSessions = useCallback(async () => {
     if (!user) return;

@@ -27,13 +27,10 @@ import { toast } from "react-toastify";
 import useClickOutside from "../../hooks/useClickOutside";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
   const [vitals, setVitals] = useState([]);
   const [loadingVitals, setLoadingVitals] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const { logout } = useAuth();
   const navigate = useNavigate();
 
   // Stats state with real data
@@ -89,38 +86,6 @@ const Dashboard = () => {
   useClickOutside(dropdownRef, () => {
     setIsDropdownOpen(false);
   });
-
-  // Fetch current user
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error(
-          "Failed to fetch user:",
-          err.response?.data || err.message
-        );
-
-        if (err.response?.status === 401) {
-          toast.error("Session expired. Please login again.");
-          localStorage.removeItem("pos-token");
-          navigate("/login");
-        }
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, [navigate]);
 
   // Fetch all vitals on load
   useEffect(() => {
@@ -187,7 +152,7 @@ const Dashboard = () => {
         toast.error("Network error. Please check your connection.");
       } else {
         toast.error(
-          error.response?.data?.error || "Failed to delete vital record"
+          error.response?.data?.error || "Failed to delete vital record",
         );
       }
     }

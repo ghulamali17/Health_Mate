@@ -28,18 +28,18 @@ import ReportModal from "../../components/dashboard/ReportModal";
 import { downloadReport, downloadAISummary } from "../../utils/reportHelpers";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
+  const { user, logout } = useAuth();
+
+  const navigate = useNavigate();
+
+  // States
   const [vitals, setVitals] = useState([]);
   const [loadingVitals, setLoadingVitals] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(false);
   const [recentReports, setRecentReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [totalReports, setTotalReports] = useState(0);
   const [selectedReport, setSelectedReport] = useState(null);
   const [showModal, setShowModal] = useState(false);
-
-  const { logout } = useAuth();
-  const navigate = useNavigate();
 
   // Stats
   const [stats, setStats] = useState({
@@ -74,33 +74,6 @@ const Dashboard = () => {
       },
     }));
   }, [vitals]);
-
-  // Fetch current user
-  // Fetch current user
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error(
-          "Failed to fetch user:",
-          err.response?.data || err.message,
-        );
-
-        if (err.response?.status === 401) {
-          toast.error("Session expired. Please login again.");
-          localStorage.removeItem("pos-token");
-          navigate("/login");
-        }
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, [navigate]);
 
   useEffect(() => {
     fetchVitals();

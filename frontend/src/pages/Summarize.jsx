@@ -9,10 +9,8 @@ import {
   Sparkles,
   Shield,
   Activity,
-  User,
   X,
   Printer,
-  ChevronRight,
 } from "lucide-react";
 import api from "../config/api";
 import Navbar from "../components/ui/Navbar";
@@ -25,9 +23,7 @@ const UploadReportPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [user, setUser] = useState(null);
   const [dragActive, setDragActive] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -38,22 +34,6 @@ const UploadReportPage = () => {
       setDragActive(false);
     }
   };
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   const handleDrop = (e) => {
     e.preventDefault();

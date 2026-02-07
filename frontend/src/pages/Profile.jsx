@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../config/api";
+import { useAuth } from "../context/authContext";
 import Navbar from "../components/ui/Navbar";
 import {
   Loader2,
@@ -18,30 +19,9 @@ import {
 } from "lucide-react";
 
 function Profile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error("Failed to fetch user profile:", err);
-        if (err.response?.status === 401) navigate("/login");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserProfile();
-  }, [navigate]);
+  const [loading, setLoading] = useState(false);
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
