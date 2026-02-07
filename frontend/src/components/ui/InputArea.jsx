@@ -1,66 +1,75 @@
 import React from "react";
-import { Send, Loader2, AlertCircle } from "lucide-react";
+import { Send, Loader2, AlertCircle, Shield } from "lucide-react";
 
 const InputArea = ({
   prompt,
   error,
   loading,
   textareaRef,
-  setPrompt,
   handleTextareaChange,
   handleTextSubmit,
 }) => {
   return (
-    <div className="sticky bottom-0 bg-white border-t border-gray-200 shadow-[0_-4px_6px_rgba(0,0,0,0.05)]">
-      <div className="max-w-4xl mx-auto p-4">
-        {error && (
-          <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Text Input Area */}
-        <div className="bg-white rounded-xl border border-gray-300 shadow-sm">
-          <div className="flex items-center p-2">
-            <textarea
-              ref={textareaRef}
-              value={prompt}
-              onChange={handleTextareaChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleTextSubmit(e);
-                }
-              }}
-              placeholder="Ask me anything about your health or medical reports..."
-              rows={1}
-              disabled={loading}
-              className={`flex-1 border-none outline-none resize-none text-sm text-gray-900 bg-transparent p-2 font-sans leading-relaxed min-h-[40px] max-h-[200px] ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            />
-            <button
-              onClick={handleTextSubmit}
-              disabled={loading || !prompt.trim()}
-              className={`flex items-center justify-center w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg transition-all ${
-                loading || !prompt.trim()
-                  ? "opacity-40 cursor-not-allowed"
-                  : "opacity-100 hover:from-green-600 hover:to-green-700"
-              }`}
-            >
-              {loading ? (
-                <Loader2 className="w-5 h-5 text-white animate-spin" />
-              ) : (
-                <Send className="w-5 h-5 text-white" />
-              )}
-            </button>
-          </div>
+    <div className="w-full">
+      {/* Error Alert */}
+      {error && (
+        <div className="mb-4 p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 animate-shake">
+          <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
+          <p className="text-xs font-bold text-rose-700 uppercase tracking-widest">
+            {error}
+          </p>
         </div>
+      )}
 
-        <p className="text-xs text-gray-500 text-center mt-3">
-          HealthLens may produce inaccurate information. Please verify important
-          details with healthcare professionals.
+      {/* Input Field Area */}
+      <div className="relative bg-white border border-slate-200 rounded-2xl shadow-sm focus-within:border-primary/40 focus-within:shadow-md transition-all duration-300">
+        <div className="flex items-end p-2 gap-2">
+          <textarea
+            ref={textareaRef}
+            value={prompt}
+            onChange={handleTextareaChange}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleTextSubmit(e);
+              }
+            }}
+            placeholder="Ask me a health question..."
+            rows={1}
+            disabled={loading}
+            className={`flex-1 border-none outline-none resize-none text-[15px] text-slate-800 bg-transparent py-3 px-4 font-medium leading-relaxed max-h-[150px] placeholder:text-slate-400 ${
+              loading ? "opacity-30" : ""
+            }`}
+          />
+
+          <button
+            onClick={handleTextSubmit}
+            disabled={loading || !prompt.trim()}
+            className={`flex items-center justify-center w-11 h-11 rounded-xl transition-all ${
+              loading || !prompt.trim()
+                ? "bg-slate-50 text-slate-300"
+                : "bg-primary text-white hover:bg-primary/90 shadow-sm active:scale-95 cursor-pointer"
+            }`}
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Subtle Footer */}
+      <div className="flex flex-col sm:flex-row justify-between items-center px-2 mt-4 gap-2">
+        <div className="flex items-center gap-2">
+          <Shield className="w-3.5 h-3.5 text-emerald-500" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            End-to-End Secure
+          </span>
+        </div>
+        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest text-center">
+          AI assistant for guidance. Not a substitute for medical advice.
         </p>
       </div>
     </div>

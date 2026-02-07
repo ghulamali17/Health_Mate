@@ -1,89 +1,82 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Loader2 } from "lucide-react";
-import axios from "axios";
-import { useAuth } from "../context/authContext";
-import Logo from "../assets/logo2.png";
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Activity,
+  Shield,
+  Sparkles,
+} from "lucide-react";
+import Header from "../components/ui/Header";
 
 function NotFound() {
-  const { user: authUser } = useAuth();
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(false);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) return;
-
-        const response = await axios.get(`${API_URL}/api/users/current`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(response.data);
-      } catch (err) {
-        console.error(
-          "Failed to fetch user:",
-          err.response?.data || err.message
-        );
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col font-sans">
-      <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-200 shadow-sm">
-        <div className="max-w-4xl mx-auto p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img
-              src={Logo}
-              alt="healthlens Logo"
-              className="w-10 h-10 object-contain rounded-xl shadow-md"
-            />
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900">
-                healthlens Assistant
-              </h1>
-              <p className="text-xs text-gray-500">Powered by Google AI</p>
-            </div>
-          </div>
-          {loadingUser ? (
-            <div className="flex items-center gap-3">
-              <Loader2 className="w-10 h-10 text-green-600 spin" />
-            </div>
-          ) : user ? (
-            <div className="flex items-center gap-3">
-              <img
-                src={user.profileImage}
-                alt={`${user.name}'s Profile`}
-                className="w-10 h-10 object-cover rounded-xl shadow-md"
-              />
-            </div>
-          ) : null}
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
+      <Header />
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            404 - Page Not Found
-          </h1>
-          <p className="text-gray-600 mb-6 max-w-md">
-            Sorry, the page you are looking for does not exist.
-          </p>
-          <Link
-            to="/home"
-            className="text-green-500 font-semibold hover:underline text-lg"
-          >
-            Go back to Home
-          </Link>
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+        <div className="relative mb-16">
+          <div className="absolute inset-0 bg-rose-500/10 rounded-full blur-[80px] animate-pulse"></div>
+          <div className="relative w-32 h-32 bg-white border border-slate-200 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-slate-900/5 rotate-3 hover:rotate-0 transition-transform duration-500">
+            <AlertCircle className="w-16 h-16 text-rose-500" />
+          </div>
+          <div className="absolute -top-4 -right-4 w-12 h-12 bg-white border border-slate-100 rounded-2xl flex items-center justify-center shadow-lg transform rotate-12">
+            <span className="text-xl font-black text-slate-900">404</span>
+          </div>
         </div>
-      </div>
+
+        <div className="text-center space-y-8 max-w-lg">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+              System Route Deviation
+            </div>
+
+            <h1 className="text-4xl md:text-5xl font-heading font-black text-slate-900 tracking-tight leading-tight">
+              Resource <span className="text-primary italic">Not Found</span>
+            </h1>
+
+            <p className="text-slate-500 font-medium text-lg leading-relaxed">
+              The requested clinical endpoint or documentation route does not
+              exist within the HealthLens architectural framework.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3"
+            >
+              <ArrowLeft className="w-5 h-5 text-primary" />
+              Return to Secure Hub
+            </button>
+
+            <Link
+              to="/healthtips"
+              className="w-full sm:w-auto px-10 py-5 bg-white border border-slate-200 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all text-center"
+            >
+              Review Wellness protocols
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-24 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-20 pointer-events-none">
+          {[Activity, Shield, Sparkles, Activity].map((Icon, i) => (
+            <div key={i} className="flex flex-col items-center gap-3">
+              <Icon className="w-8 h-8 text-slate-400" />
+              <div className="h-1 w-12 bg-slate-200 rounded-full"></div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      <footer className="p-10 border-t border-slate-50 text-center">
+        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+          © 2025 HealthLens Clinical Registry • Optimized for Resilience
+        </p>
+      </footer>
     </div>
   );
 }

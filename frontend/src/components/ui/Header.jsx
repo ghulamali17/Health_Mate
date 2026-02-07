@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Menu,
   LogOut,
@@ -9,24 +9,26 @@ import {
   ChevronRight,
   User,
   LayoutDashboard,
-  HomeIcon,
+  Clock,
 } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 import useClickOutside from "../../hooks/useClickOutside";
-import api from "../../config/api";
 import { toast } from "react-toastify";
 
 const Header = ({ toggleSidebar }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [loadingUser, setLoadingUser] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
   const dropdownRef = useRef(null);
 
-  useClickOutside(dropdownRef, () => {
-    setIsDropdownOpen(false);
-  });
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useClickOutside(dropdownRef, () => setIsDropdownOpen(false));
 
   const handleLogout = () => {
     logout();
@@ -41,126 +43,122 @@ const Header = ({ toggleSidebar }) => {
     setIsDropdownOpen(false);
   };
 
+  const pathname = window.location.pathname;
+
   return (
-    <header className="sticky top-0 z-20 bg-white/70 backdrop-blur-md border-b border-green-100 shadow-sm">
-      <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 md:gap-4">
-              {toggleSidebar && (
-                <button
-                  onClick={toggleSidebar}
-                  className="md:hidden p-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all"
-                >
-                  <Menu className="w-5 h-5 text-white" />
-                </button>
-              )}
-
-              <div className="relative">
-                <div className="w-10 h-10 md:w-14 md:h-14 bg-white/20 backdrop-blur-sm rounded-xl md:rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-                  <Activity
-                    className="w-6 h-6 md:w-8 md:h-8 text-white"
-                    strokeWidth={2.5}
-                  />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg md:text-2xl font-bold text-white flex items-center gap-1.5 md:gap-2 truncate">
-                  HealthLens
-                  <Sparkles className="w-4 h-4 md:w-5 md:h-5 text-yellow-300 flex-shrink-0" />
-                </h1>
-                <p className="text-emerald-100 text-[10px] md:text-sm font-medium truncate">
-                  Apki sehat ka digital companion
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
-              <button className="relative p-2 md:p-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all">
-                <Bell className="w-4 h-4 md:w-5 md:h-5 text-white" />
-                <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-[10px] md:text-xs rounded-full flex items-center justify-center font-bold">
-                  3
-                </span>
+    <header
+      className={`sticky top-0 z-[100] transition-all duration-300 ${
+        scrolled
+          ? "bg-white/90 backdrop-blur-md border-b border-slate-200 py-3 shadow-sm"
+          : "bg-white border-b border-slate-100 py-4"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {toggleSidebar && (
+              <button
+                onClick={toggleSidebar}
+                className="lg:hidden p-2 hover:bg-slate-50 rounded-lg transition-all"
+              >
+                <Menu className="w-5 h-5 text-slate-600" />
               </button>
+            )}
 
-              {user ? (
-                <div ref={dropdownRef} className="relative">
-                  <button
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 md:gap-3 px-2 md:px-4 py-2 md:py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all"
-                  >
-                    {loadingUser ? (
-                      <div className="w-7 h-7 md:w-8 md:h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                        <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      </div>
-                    ) : (
-                      <div className="w-7 h-7 md:w-8 md:h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center font-bold text-white text-xs md:text-sm">
-                        {user?.name?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                    )}
-                    <span className="text-sm font-semibold text-white hidden md:block">
-                      {loadingUser ? "Loading..." : user?.name || "Guest"}
-                    </span>
-                    <ChevronRight
-                      className={`w-4 h-4 text-white transition-transform ${
-                        isDropdownOpen ? "rotate-90" : ""
-                      }`}
-                    />
-                  </button>
-
-                  {isDropdownOpen && (
-                    <div className="absolute right-0 top-14 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 animate-fadeIn">
-                      <div className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border-b border-gray-100">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {user?.name || "Guest User"}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {user?.email || "Premium Member"}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => handleNavigation("/")}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                      >
-                        <HomeIcon className="w-4 h-4 text-emerald-600" />
-                        Home
-                      </button>
-                      <button
-                        onClick={() => handleNavigation("/dashboard")}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                      >
-                        <LayoutDashboard className="w-4 h-4 text-emerald-600" />
-                        Dashboard
-                      </button>
-                      <button
-                        onClick={() => handleNavigation("/profile")}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-emerald-50 transition-colors"
-                      >
-                        <User className="w-4 h-4 text-emerald-600" />
-                        Profile Settings
-                      </button>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Logout
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div>
-                  <button
-                    onClick={() => navigate("/login")}
-                    className="px-3 md:px-4 py-2 md:py-2.5 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl text-sm font-semibold text-white transition-all"
-                  >
-                    Login
-                  </button>
-                </div>
-              )}
+            <div
+              className="flex items-center gap-3 cursor-pointer group"
+              onClick={() => navigate("/")}
+            >
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-all">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-slate-900 tracking-tight">
+                HealthLens
+              </span>
             </div>
+          </div>
+
+          <nav className="hidden lg:flex items-center gap-8">
+            {[
+              { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+              { label: "Health AI", path: "/chat", icon: Sparkles },
+              { label: "Vitals", path: "/all-vitals", icon: Activity },
+              { label: "Reports", path: "/reports", icon: Clock },
+            ].map((item) => (
+              <Link
+                key={item.label}
+                to={item.path}
+                className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-all ${
+                  pathname === item.path
+                    ? "text-primary"
+                    : "text-slate-400 hover:text-slate-900"
+                }`}
+              >
+                <item.icon className="w-3.5 h-3.5" />
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <button className="relative p-2 text-slate-400 hover:text-primary transition-all">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white"></span>
+            </button>
+
+            {user ? (
+              <div ref={dropdownRef} className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-white border border-slate-100 rounded-xl hover:border-primary/20 transition-all shadow-sm group"
+                >
+                  <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center font-bold text-white text-xs">
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <ChevronRight
+                    className={`w-4 h-4 text-slate-300 transition-transform ${isDropdownOpen ? "rotate-90" : ""}`}
+                  />
+                </button>
+
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fadeIn">
+                    <div className="px-4 py-3 mb-1 border-b border-slate-50">
+                      <p className="text-sm font-bold text-slate-900 truncate">
+                        {user?.name}
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                        Premium Account
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleNavigation("/profile")}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-primary rounded-lg transition-all"
+                    >
+                      <User className="w-4 h-4" /> Profile
+                    </button>
+                    <button
+                      onClick={() => handleNavigation("/dashboard")}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-primary rounded-lg transition-all"
+                    >
+                      <LayoutDashboard className="w-4 h-4" /> Dashboard
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all border-t border-slate-50 mt-1"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="px-6 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md active:scale-95"
+              >
+                Login
+              </button>
+            )}
           </div>
         </div>
       </div>

@@ -42,6 +42,7 @@ const routes = [
   { path: "/health-tips", element: <HealthTips /> },
   { path: "/profile", element: <Profile /> },
   { path: "/all-vitals", element: <AllVitals /> },
+  { path: "/timeline", element: <AllVitals /> },
   { path: "/family-members", element: <FamilyMembers /> },
   { path: "/reports", element: <SavedReports /> },
   { path: "/emergency-contacts", element: <EmergencyContacts /> },

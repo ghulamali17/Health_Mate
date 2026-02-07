@@ -14,7 +14,6 @@ import {
   removeSession,
   setLoading as setSessionLoading,
 } from "../store/slices/sessionSlice";
-import "./Styles.css";
 
 const HealthLens = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -64,7 +63,7 @@ const HealthLens = () => {
       } catch (err) {
         console.error(
           "Failed to fetch user:",
-          err.response?.data || err.message
+          err.response?.data || err.message,
         );
       } finally {
         setLoadingUser(false);
@@ -79,7 +78,7 @@ const HealthLens = () => {
     try {
       dispatch(setSessionLoading(true));
       const response = await axios.get(
-        `${API_URL}/api/chat/sessions/${user._id}`
+        `${API_URL}/api/chat/sessions/${user._id}`,
       );
       dispatch(setSessions(response.data.sessions || []));
     } catch (err) {
@@ -93,16 +92,16 @@ const HealthLens = () => {
     if (!user || !sessionId) return;
     try {
       const response = await axios.get(
-        `${API_URL}/api/chat/history/${user._id}/${sessionId}`
+        `${API_URL}/api/chat/history/${user._id}/${sessionId}`,
       );
       setConversation(response.data.messages || []);
 
       // Get fresh sessions state
       const currentSessionsResponse = await axios.get(
-        `${API_URL}/api/chat/sessions/${user._id}`
+        `${API_URL}/api/chat/sessions/${user._id}`,
       );
       const currentSession = currentSessionsResponse.data.sessions?.find(
-        (session) => session.sessionId === sessionId
+        (session) => session.sessionId === sessionId,
       );
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
@@ -149,12 +148,12 @@ const HealthLens = () => {
     setIsSidebarOpen(false);
     try {
       const response = await axios.get(
-        `${API_URL}/api/chat/history/${user._id}/${selectedSessionId}`
+        `${API_URL}/api/chat/history/${user._id}/${selectedSessionId}`,
       );
       setConversation(response.data.messages || []);
 
       const currentSession = sessions.find(
-        (session) => session.sessionId === selectedSessionId
+        (session) => session.sessionId === selectedSessionId,
       );
       if (currentSession) {
         dispatch(setCurrentSession(currentSession));
@@ -187,7 +186,7 @@ const HealthLens = () => {
     if (!user) return;
     try {
       await axios.delete(
-        `${API_URL}/api/chat/session/${user._id}/${sessionIdToDelete}`
+        `${API_URL}/api/chat/session/${user._id}/${sessionIdToDelete}`,
       );
       dispatch(removeSession(sessionIdToDelete));
 
@@ -266,7 +265,7 @@ const HealthLens = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gradient-to-b from-gray-50 to-white font-sans">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans text-slate-900 overflow-hidden">
       <ChatHistorySidebar
         user={user}
         isSidebarOpen={isSidebarOpen}
@@ -276,26 +275,35 @@ const HealthLens = () => {
         startNewSession={startNewSession}
         loading={loading}
       />
-      <div className="flex-1 flex flex-col">
+
+      <div className="flex-1 flex flex-col relative w-full overflow-hidden">
         <Header
           user={user}
           loadingUser={loadingUser}
           toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
           sessionId={sessionId}
         />
-        <ConversationArea
-          conversation={conversation}
-          loading={loading}
-          scrollRef={scrollRef}
-        />
-        <InputArea
-          prompt={prompt}
-          error={error}
-          loading={loading}
-          textareaRef={textareaRef}
-          handleTextareaChange={handleTextareaChange}
-          handleTextSubmit={handleTextSubmit}
-        />
+
+        <div className="flex-1 overflow-hidden flex flex-col relative">
+          <ConversationArea
+            conversation={conversation}
+            loading={loading}
+            scrollRef={scrollRef}
+          />
+
+          <div className="w-full p-4 md:p-6 bg-white border-t border-slate-200">
+            <div className="max-w-4xl mx-auto">
+              <InputArea
+                prompt={prompt}
+                error={error}
+                loading={loading}
+                textareaRef={textareaRef}
+                handleTextareaChange={handleTextareaChange}
+                handleTextSubmit={handleTextSubmit}
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

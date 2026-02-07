@@ -6,8 +6,18 @@ import { useAuth } from "../../context/authContext";
 import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Header from "../../components/ui/Header";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  Lock,
+  Shield,
+  ArrowRight,
+  Activity,
+  Sparkles,
+  Eye,
+  EyeOff,
+  ChevronRight,
+} from "lucide-react";
 import { toast } from "react-toastify";
 
 const schema = yup.object().shape({
@@ -21,37 +31,14 @@ const schema = yup.object().shape({
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [user, setUser] = useState(null);
-  const [loadingUser, setLoadingUser] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm({ resolver: yupResolver(schema) });
-
-  useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) return;
-
-        const response = await api.get("/api/users/current");
-        setUser(response.data);
-      } catch (err) {
-        console.error(
-          "Failed to fetch user:",
-          err.response?.data || err.message
-        );
-      } finally {
-        setLoadingUser(false);
-      }
-    };
-
-    fetchCurrentUser();
-  }, []);
 
   const onSubmit = async (data) => {
     const { email, password } = data;
@@ -68,131 +55,133 @@ function Login() {
       if (message === "success") {
         login(user);
         localStorage.setItem("pos-token", token);
-        toast.success("Successfully logged in");
+        toast.success("Authentication Successful");
         navigate("/dashboard");
-      } else if (message === "No record found") {
-        toast.error("No user found with this email");
-      } else if (message === "Incorrect password") {
-        toast.error("Incorrect password");
+      } else {
+        toast.error(message || "Authentication Failed");
       }
     } catch (error) {
       console.error("Login error:", error.response?.data || error.message);
-
-      // Better error handling
-      if (error.response?.status === 401) {
-        toast.error("Invalid credentials");
-      } else if (error.code === "ERR_NETWORK") {
-        toast.error("Network error. Please check your connection.");
-      } else {
-        toast.error(error.response?.data?.error || "Something went wrong");
-      }
+      toast.error(error.response?.data?.error || "Connection Fault Detected");
     } finally {
       setLoadingSubmit(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col font-sans">
-      {/* <Header user={user} loadingUser={loadingUser} /> */}
-      <div className="flex-1 flex justify-center items-center px-4">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-sm bg-white p-8 rounded-2xl shadow-sm border border-gray-200 space-y-6"
-        >
-          <h2 className="text-2xl font-bold text-gray-900 text-center">
-            HealthLens Login
-          </h2>
+    <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+      {/* Visual Infrastructure Decor */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -mr-64 -mt-64"></div>
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-sky-400/5 rounded-full blur-[100px] -ml-64 -mb-64"></div>
 
-          {/* Email Field */}
-          <div>
-            <label className="block text-gray-800 font-medium mb-1">
-              Email
-            </label>
-            <input
-              {...register("email")}
-              type="email"
-              placeholder="ali@gmail.com"
-              disabled={loadingSubmit}
-              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                loadingSubmit ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            />
-            {errors.email && (
-              <p className="text-sm mt-1 text-red-500 flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                {errors.email.message}
-              </p>
-            )}
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-12 animate-fadeIn">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Sign In</h1>
+            <p className="text-slate-500 font-medium">
+              Enter your credentials to access your account
+            </p>
           </div>
+        </div>
 
-          {/* Password Field */}
-          <div>
-            <label className="block text-gray-800 font-medium mb-1">
-              Password
-            </label>
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="••••••••"
-              disabled={loadingSubmit}
-              className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                loadingSubmit ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            />
-            {errors.password && (
-              <p className="text-sm mt-1 text-red-500 flex items-center gap-1">
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                    clipRule="evenodd"
+        <div className="bg-white border border-slate-200 rounded-[3rem] p-10 md:p-12 shadow-[0_8px_40px_rgb(0,0,0,0.04)] animate-slideUp">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                  Email Address
+                </label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  <input
+                    {...register("email")}
+                    type="email"
+                    placeholder="name@example.com"
+                    disabled={loadingSubmit}
+                    className={`w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all text-slate-900 font-medium shadow-sm ${
+                      errors.email ? "border-rose-500" : ""
+                    }`}
                   />
-                </svg>
-                {errors.password?.message}
-              </p>
-            )}
-          </div>
+                </div>
+                {errors.email && (
+                  <p className="text-rose-500 text-xs font-bold ml-1 animate-fadeIn">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
 
-          <Button
-            className={`w-full bg-gradient-to-br from-green-500 to-green-600 text-white hover:bg-gradient-to-br hover:from-green-600 hover:to-green-700 font-medium py-3 rounded-lg transition-opacity flex items-center justify-center ${
-              loadingSubmit ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={loadingSubmit}
-          >
-            {loadingSubmit ? (
-              <>
-                <Loader2 className="w-5 h-5 text-white spin mr-2" />
-                Logging in...
-              </>
-            ) : (
-              "Login"
-            )}
-          </Button>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                  Password
+                </label>
+                <div className="relative group">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
+                  <input
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    disabled={loadingSubmit}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-primary focus:bg-white transition-all text-slate-900 font-medium shadow-sm ${
+                      errors.password ? "border-rose-500" : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-primary transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-rose-500 text-xs font-bold ml-1 animate-fadeIn">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+            </div>
 
-          <p className="text-center text-sm text-gray-600">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-green-500 font-semibold hover:underline"
+            <button
+              type="submit"
+              disabled={loadingSubmit}
+              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-[0.98] shadow-xl shadow-slate-900/10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 group"
             >
-              Sign up now
-            </Link>
-          </p>
-        </form>
+              {loadingSubmit ? (
+                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  Sign In
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </button>
+
+            <p className="text-center text-slate-500 text-sm font-medium">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="text-primary font-bold hover:underline"
+              >
+                Create Account
+              </Link>
+            </p>
+            <div className="flex items-center gap-3 opacity-30 grayscale pointer-events-none">
+              <Shield className="w-4 h-4 text-slate-400" />
+              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                AES-256 Encryption Active
+              </span>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer Trademark */}
+        <p className="mt-12 text-center text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
+          © 2025 HealthLens Clinical Registry
+        </p>
       </div>
     </div>
   );
