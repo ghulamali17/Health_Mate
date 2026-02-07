@@ -15,7 +15,7 @@ import {
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const SavedReports = () => {
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -147,9 +147,9 @@ const SavedReports = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-6 py-12 mt-12">
         {/* Title Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-2">

@@ -12,16 +12,16 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const About = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-6xl mx-auto px-6 py-16">
+      <main className="max-w-6xl mx-auto px-6 py-16 mt-8">
         {/* Intro Section */}
         <div className="flex flex-col items-center text-center mb-24">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold uppercase tracking-widest mb-8 border border-emerald-100">

@@ -23,7 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import api from "../config/api";
 import { toast } from "react-toastify";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const FamilyMembers = () => {
   const [familyMembers, setFamilyMembers] = useState([]);
@@ -216,7 +216,7 @@ const FamilyMembers = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC]">
-        <Header />
+        <Navbar />
         <div className="flex flex-col items-center justify-center py-32 gap-4">
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
           <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
@@ -229,9 +229,9 @@ const FamilyMembers = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-6 py-12 mt-12">
         {/* Title & Action */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div className="space-y-2">

@@ -17,7 +17,7 @@ import {
 import { useAuth } from "../context/authContext";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const AddVitals = () => {
   const {
@@ -150,8 +150,8 @@ const AddVitals = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <Navbar />
+      <main className="max-w-4xl mx-auto px-6 py-12 mt-12">
         {/* Header Section */}
         <div className="flex items-center gap-4 mb-12">
           <button

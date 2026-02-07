@@ -15,7 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import axios from "axios";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 import { useNavigate } from "react-router-dom";
 
 const UploadReportPage = () => {
@@ -145,9 +145,9 @@ const UploadReportPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 py-16 mt-12">
         <div className="space-y-10">
           {/* Page Intro */}
           <div className="text-center">

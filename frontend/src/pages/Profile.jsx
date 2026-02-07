@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../config/api";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 import {
   Loader2,
   User,
@@ -54,7 +54,7 @@ function Profile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC]">
-        <Header />
+        <Navbar />
         <div className="flex flex-col justify-center items-center py-32 gap-4">
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
@@ -67,9 +67,9 @@ function Profile() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 selection:bg-primary/10">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 py-16">
+      <main className="max-w-4xl mx-auto px-6 py-16 mt-8">
         {/* Main Profile Card - Matching our Premium Theme */}
         <div className="bg-white border border-slate-200 rounded-[3rem] shadow-xl shadow-slate-200/40 overflow-hidden">
           {/* Cover/Top Section */}

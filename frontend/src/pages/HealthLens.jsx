@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "../context/authContext";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 import ChatHistorySidebar from "../components/ui/ChatHistorySidebar";
 import ConversationArea from "../components/ui/ConversationArea";
 import InputArea from "../components/ui/InputArea";
@@ -277,12 +277,7 @@ const HealthLens = () => {
       />
 
       <div className="flex-1 flex flex-col relative w-full overflow-hidden">
-        <Header
-          user={user}
-          loadingUser={loadingUser}
-          toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          sessionId={sessionId}
-        />
+        <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
         <div className="flex-1 overflow-hidden flex flex-col relative">
           <ConversationArea

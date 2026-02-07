@@ -33,7 +33,7 @@ import { useAuth } from "../../context/authContext";
 import { toast } from "react-toastify";
 import useClickOutside from "../../hooks/useClickOutside";
 import axios from "axios";
-import Header from "../../components/ui/Header";
+import Navbar from "../../components/ui/Navbar";
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -396,9 +396,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background dark:bg-slate-950 font-body transition-colors duration-300">
-      <Header />
+      <Navbar />
 
-      <main className="max-w-[1440px] mx-auto p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
+      <main className="max-w-[1440px] mx-auto mt-18 p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">

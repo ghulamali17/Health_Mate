@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { toast } from "react-toastify";
 import useClickOutside from "../../hooks/useClickOutside";
@@ -14,29 +14,18 @@ import {
   LogOut,
   Home,
   ChevronRight,
-  Sparkles,
-  Bell,
-  Clock,
-  Menu,
 } from "lucide-react";
 
-/**
- * Unified Navbar used across the entire application.
- * Automatically adapts links based on whether the user is on the landing page or internal pages.
- */
-const Navbar = ({ toggleSidebar }) => {
+const Navbar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropdownRef = useRef(null);
-
-  const isLandingPage = location.pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 20);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -58,93 +47,49 @@ const Navbar = ({ toggleSidebar }) => {
     navigate(path);
     setIsDropdownOpen(false);
   };
-
-  // Define navigation links based on page context
-  const landingLinks = [
-    { label: "Features", href: "#features" },
-    { label: "How it Works", href: "#how-it-works" },
-    { label: "Reviews", href: "#testimonials" },
-  ];
-
-  const appLinks = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Health AI", path: "/chat", icon: Sparkles },
-    { label: "Vitals", path: "/all-vitals", icon: Activity },
-    { label: "Reports", path: "/reports", icon: Clock },
-  ];
-
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-[1000] transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/90 backdrop-blur-md border-b border-slate-100 py-3 shadow-sm"
-          : isLandingPage
-            ? "bg-transparent py-6"
-            : "bg-white border-b border-slate-100 py-4"
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white border-b border-slate-100 py-4 shadow-sm"
+          : "bg-transparent py-6"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Left: Menu Toggle (Internal) + Logo */}
-        <div className="flex items-center gap-4">
-          {!isLandingPage && toggleSidebar && (
-            <button
-              onClick={toggleSidebar}
-              className="lg:hidden p-2 hover:bg-slate-50 rounded-lg transition-all"
-            >
-              <Menu className="w-5 h-5 text-slate-600" />
-            </button>
-          )}
-
-          <div
-            className="flex items-center gap-3 cursor-pointer group"
-            onClick={() => navigate("/")}
-          >
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-all">
-              <Activity className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-slate-900 tracking-tight">
-              HealthLens
-            </span>
+        <div
+          className="flex items-center gap-3 cursor-pointer group"
+          onClick={() => navigate("/")}
+        >
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+            <Activity className="w-5 h-5 text-white" />
           </div>
+          <span className="text-xl font-bold text-slate-900 tracking-tight">
+            HealthLens
+          </span>
         </div>
 
-        {/* Center: Navigation Links */}
         <div className="hidden md:flex items-center gap-8">
-          {isLandingPage
-            ? landingLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm font-bold text-slate-400 hover:text-primary transition-all"
-                >
-                  {link.label}
-                </a>
-              ))
-            : appLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.path}
-                  className={`flex items-center gap-2 text-xs font-bold uppercase tracking-wider transition-all ${
-                    location.pathname === item.path
-                      ? "text-primary font-black"
-                      : "text-slate-400 hover:text-slate-900"
-                  }`}
-                >
-                  <item.icon className="w-3.5 h-3.5" />
-                  {item.label}
-                </Link>
-              ))}
+          <a
+            href="#features"
+            className="text-sm font-bold text-slate-400 hover:text-primary transition-all"
+          >
+            Features
+          </a>
+          <a
+            href="#how-it-works"
+            className="text-sm font-bold text-slate-400 hover:text-primary transition-all"
+          >
+            How it Works
+          </a>
+          <a
+            href="#testimonials"
+            className="text-sm font-bold text-slate-400 hover:text-primary transition-all"
+          >
+            Reviews
+          </a>
         </div>
 
-        {/* Right: Notifications + User Profile / Auth */}
         <div className="flex items-center gap-4">
-          {!isLandingPage && (
-            <button className="relative p-2 text-slate-400 hover:text-primary transition-all">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full ring-2 ring-white"></span>
-            </button>
-          )}
-
           {user ? (
             <div ref={dropdownRef} className="relative">
               <button

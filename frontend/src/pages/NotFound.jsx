@@ -7,16 +7,16 @@ import {
   Shield,
   Sparkles,
 } from "lucide-react";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 function NotFound() {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
-      <Header />
+      <Navbar />
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 mt-12">
         <div className="relative mb-16">
           <div className="absolute inset-0 bg-rose-500/10 rounded-full blur-[80px] animate-pulse"></div>
           <div className="relative w-32 h-32 bg-white border border-slate-200 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-slate-900/5 rotate-3 hover:rotate-0 transition-transform duration-500">
@@ -31,16 +31,16 @@ function NotFound() {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
               <Shield className="w-3.5 h-3.5 text-primary" />
-              System Route Deviation
+              Page Not Found
             </div>
 
             <h1 className="text-4xl md:text-5xl font-heading font-black text-slate-900 tracking-tight leading-tight">
-              Resource <span className="text-primary italic">Not Found</span>
+              Oops! <span className="text-primary italic">Page Not Found</span>
             </h1>
 
             <p className="text-slate-500 font-medium text-lg leading-relaxed">
-              The requested clinical endpoint or documentation route does not
-              exist within the HealthLens architectural framework.
+              The page you're looking for doesn't exist. It might have been
+              moved or deleted.
             </p>
           </div>
 
@@ -50,14 +50,14 @@ function NotFound() {
               className="w-full sm:w-auto px-10 py-5 bg-slate-900 text-white rounded-2xl font-black text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3"
             >
               <ArrowLeft className="w-5 h-5 text-primary" />
-              Return to Secure Hub
+              Go Back Home
             </button>
 
             <Link
-              to="/healthtips"
+              to="/health-tips"
               className="w-full sm:w-auto px-10 py-5 bg-white border border-slate-200 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all text-center"
             >
-              Review Wellness protocols
+              Browse Health Tips
             </Link>
           </div>
         </div>
@@ -74,7 +74,7 @@ function NotFound() {
 
       <footer className="p-10 border-t border-slate-50 text-center">
         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-          © 2025 HealthLens Clinical Registry • Optimized for Resilience
+          © 2025 HealthLens • Your Health, Simplified
         </p>
       </footer>
     </div>

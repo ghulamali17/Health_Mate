@@ -12,14 +12,14 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const HealthTips = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900">
-      <Header />
+      <Navbar />
 
       <main className="max-w-6xl mx-auto px-6 py-16">
         {/* Header Section */}

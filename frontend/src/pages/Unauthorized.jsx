@@ -1,16 +1,16 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Lock, ShieldAlert, ArrowLeft, Shield } from "lucide-react";
-import Header from "../components/ui/Header";
+import Navbar from "../components/ui/Navbar";
 
 const Unauthorized = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] font-sans text-slate-900 flex flex-col">
-      <Header />
+      <Navbar />
 
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 mt-12">
         <div className="relative mb-16">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-[80px]"></div>
           <div className="relative w-32 h-32 bg-slate-900 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-slate-900/20">
@@ -25,16 +25,16 @@ const Unauthorized = () => {
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-emerald-100">
               <Shield className="w-3.5 h-3.5" />
-              Security Protocol Enforced
+              Access Denied
             </div>
 
             <h1 className="text-4xl md:text-5xl font-heading font-black text-slate-900 tracking-tight leading-tight">
-              Access <span className="text-primary italic">Restricted</span>
+              Access <span className="text-primary italic">Denied</span>
             </h1>
 
             <p className="text-slate-500 font-medium text-lg leading-relaxed">
-              Your current authorization credentials do not grant access to this
-              biological data cluster or clinical administration module.
+              You don't have permission to access this page. Please log in with
+              an authorized account.
             </p>
           </div>
 
@@ -51,7 +51,7 @@ const Unauthorized = () => {
               onClick={() => navigate("/login")}
               className="w-full sm:w-auto px-10 py-5 bg-white border border-slate-200 text-slate-500 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all"
             >
-              Re-Authenticate
+              Sign In
             </button>
           </div>
         </div>
@@ -59,7 +59,7 @@ const Unauthorized = () => {
 
       <footer className="p-10 border-t border-slate-50 text-center">
         <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">
-          © 2025 HealthLens Security Division • Zero Trust Architecture Active
+          © 2025 HealthLens • Your Health, Simplified
         </p>
       </footer>
     </div>
