@@ -279,7 +279,7 @@ const HealthLens = () => {
       <div className="flex-1 flex flex-col relative w-full overflow-hidden">
         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-        <div className="flex-1 overflow-hidden flex flex-col relative">
+        <div className="flex-1 overflow-hidden flex flex-col relativ mt-12">
           <ConversationArea
             conversation={conversation}
             loading={loading}
