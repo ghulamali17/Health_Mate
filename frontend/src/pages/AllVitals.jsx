@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import api from "../config/api";
 import {
   Heart,
   Activity,
@@ -21,8 +22,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/ui/Navbar";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
 function AllVitals() {
   const [vitals, setVitals] = useState([]);
   const [filteredVitals, setFilteredVitals] = useState([]);
@@ -37,21 +36,8 @@ function AllVitals() {
   const fetchVitals = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("pos-token");
-      if (!token) {
-        toast.error("Please log in again.");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/api/vitals/useritems`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const response = await api.get("/api/vitals/useritems");
+      const data = response.data;
       const sorted = data.sort(
         (a, b) => new Date(b.measuredAt) - new Date(a.measuredAt),
       );
@@ -85,11 +71,7 @@ function AllVitals() {
     if (!window.confirm("Are you sure you want to delete this record?")) return;
 
     try {
-      const token = localStorage.getItem("pos-token");
-      await fetch(`${API_URL}/api/vitals/deleteitem/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/vitals/deleteitem/${id}`);
       setVitals((prev) => prev.filter((v) => v._id !== id));
       setFilteredVitals((prev) => prev.filter((v) => v._id !== id));
       toast.success("Record deleted successfully");

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../config/api";
 import { useDispatch, useSelector } from "react-redux";
 import { useAuth } from "../context/authContext";
 import Navbar from "../components/ui/Navbar";
@@ -16,7 +16,6 @@ import {
 } from "../store/slices/sessionSlice";
 
 const HealthLens = () => {
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
@@ -53,12 +52,7 @@ const HealthLens = () => {
     const fetchCurrentUser = async () => {
       try {
         setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) return;
-
-        const response = await axios.get(`${API_URL}/api/users/current`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
         console.error(
@@ -77,9 +71,7 @@ const HealthLens = () => {
     if (!user) return;
     try {
       dispatch(setSessionLoading(true));
-      const response = await axios.get(
-        `${API_URL}/api/chat/sessions/${user._id}`,
-      );
+      const response = await api.get(`/api/chat/sessions/${user._id}`);
       dispatch(setSessions(response.data.sessions || []));
     } catch (err) {
       console.error("Failed to fetch sessions:", err);
@@ -91,14 +83,14 @@ const HealthLens = () => {
   const loadChatHistory = useCallback(async () => {
     if (!user || !sessionId) return;
     try {
-      const response = await axios.get(
-        `${API_URL}/api/chat/history/${user._id}/${sessionId}`,
+      const response = await api.get(
+        `/api/chat/history/${user._id}/${sessionId}`,
       );
       setConversation(response.data.messages || []);
 
       // Get fresh sessions state
-      const currentSessionsResponse = await axios.get(
-        `${API_URL}/api/chat/sessions/${user._id}`,
+      const currentSessionsResponse = await api.get(
+        `/api/chat/sessions/${user._id}`,
       );
       const currentSession = currentSessionsResponse.data.sessions?.find(
         (session) => session.sessionId === sessionId,
@@ -133,7 +125,7 @@ const HealthLens = () => {
   const saveChatMessage = async (message) => {
     if (!user || !sessionId) return;
     try {
-      await axios.post(`${API_URL}/api/chat/save`, {
+      await api.post("/api/chat/save", {
         userId: user._id,
         sessionId,
         message,
@@ -147,8 +139,8 @@ const HealthLens = () => {
     dispatch(setSessionId(selectedSessionId));
     setIsSidebarOpen(false);
     try {
-      const response = await axios.get(
-        `${API_URL}/api/chat/history/${user._id}/${selectedSessionId}`,
+      const response = await api.get(
+        `/api/chat/history/${user._id}/${selectedSessionId}`,
       );
       setConversation(response.data.messages || []);
 
@@ -185,9 +177,7 @@ const HealthLens = () => {
   const deleteSession = async (sessionIdToDelete) => {
     if (!user) return;
     try {
-      await axios.delete(
-        `${API_URL}/api/chat/session/${user._id}/${sessionIdToDelete}`,
-      );
+      await api.delete(`/api/chat/session/${user._id}/${sessionIdToDelete}`);
       dispatch(removeSession(sessionIdToDelete));
 
       if (sessionIdToDelete === sessionId) {
@@ -219,13 +209,9 @@ const HealthLens = () => {
     setPrompt("");
 
     try {
-      const res = await fetch(`${API_URL}/api/healthlens`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: currentPrompt }),
-      });
+      const res = await api.post("/api/healthlens", { prompt: currentPrompt });
 
-      const data = await res.json();
+      const data = res.data; // Access data directly from api response
       const aiResponse = data.text || "No response.";
       setResponse(aiResponse);
 

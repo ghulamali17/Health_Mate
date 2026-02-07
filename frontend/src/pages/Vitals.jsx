@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import api from "../config/api";
 import {
   Heart,
   Droplet,
@@ -43,7 +43,6 @@ const AddVitals = () => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
   const [familyMembers, setFamilyMembers] = useState([]);
   const [loadingFamilyMembers, setLoadingFamilyMembers] = useState(false);
@@ -57,12 +56,7 @@ const AddVitals = () => {
   const fetchFamilyMembers = async () => {
     try {
       setLoadingFamilyMembers(true);
-      const token = localStorage.getItem("pos-token");
-      if (!token) return;
-
-      const response = await axios.get(`${API_URL}/api/family-members`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get("/api/family-members");
 
       if (response.data.success) {
         setFamilyMembers(response.data.data);
@@ -125,18 +119,8 @@ const AddVitals = () => {
         : undefined,
     };
 
-    const token = localStorage.getItem("pos-token");
     try {
-      const res = await axios.post(
-        `${API_URL}/api/vitals/createitem`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const res = await api.post("/api/vitals/createitem", payload);
 
       if (res.status === 201) {
         toast.success("Vitals saved successfully");

@@ -12,13 +12,12 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
+import api from "../config/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/ui/Navbar";
 
 const SavedReports = () => {
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const navigate = useNavigate();
   const [reports, setReports] = useState([]);
   const [filteredReports, setFilteredReports] = useState([]);
@@ -34,10 +33,7 @@ const SavedReports = () => {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("pos-token");
-      const response = await axios.get(`${API_URL}/api/reports`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get("/api/reports");
       const sortedReports =
         response.data.reports?.sort(
           (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt),
@@ -54,10 +50,7 @@ const SavedReports = () => {
 
   const viewReport = async (reportId) => {
     try {
-      const token = localStorage.getItem("pos-token");
-      const response = await axios.get(`${API_URL}/api/reports/${reportId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get(`/api/reports/${reportId}`);
       setSelectedReport(response.data.report);
       setShowModal(true);
     } catch (error) {
@@ -70,14 +63,12 @@ const SavedReports = () => {
     if (!window.confirm("Are you sure you want to delete this report?")) return;
 
     try {
-      const token = localStorage.getItem("pos-token");
-      await axios.delete(`${API_URL}/api/reports/${reportId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/api/reports/${reportId}`);
       setReports(reports.filter((r) => r._id !== reportId));
       setFilteredReports(filteredReports.filter((r) => r._id !== reportId));
       toast.success("Report deleted successfully");
     } catch (error) {
+      // ...
       console.error("Failed to delete report:", error);
       toast.error("Failed to delete report");
     }

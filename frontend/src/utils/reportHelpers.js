@@ -1,3 +1,4 @@
+import api from "../config/api";
 import { toast } from "react-toastify";
 
 // Helper function to extract file extension
@@ -22,14 +23,11 @@ export const downloadReport = async (report) => {
   }
 
   try {
-    const token = localStorage.getItem("pos-token");
-    const response = await fetch(report.fileUrl, {
-      headers: { Authorization: `Bearer ${token}` },
+    const response = await api.get(report.fileUrl, {
+      responseType: "blob",
     });
 
-    if (!response.ok) throw new Error("Download failed");
-
-    const blob = await response.blob();
+    const blob = response.data;
     const blobUrl = window.URL.createObjectURL(blob);
 
     const link = document.createElement("a");

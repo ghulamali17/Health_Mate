@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../config/api";
 import { useAuth } from "../../context/authContext";
 import { toast } from "react-toastify";
-import axios from "axios";
+
 import Navbar from "../../components/ui/Navbar";
 import StatsCard from "../../components/dashboard/StatsCard";
 import QuickActions from "../../components/dashboard/QuickActions";
@@ -76,16 +76,11 @@ const Dashboard = () => {
   }, [vitals]);
 
   // Fetch current user
+  // Fetch current user
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
         setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
         const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
@@ -115,12 +110,6 @@ const Dashboard = () => {
   const fetchVitals = async () => {
     try {
       setLoadingVitals(true);
-      const token = localStorage.getItem("pos-token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
       const res = await api.get("/api/vitals/useritems");
       setVitals(res.data);
     } catch (err) {
@@ -148,12 +137,7 @@ const Dashboard = () => {
   const fetchRecentReports = async () => {
     try {
       setLoadingReports(true);
-      const token = localStorage.getItem("pos-token");
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-      const response = await axios.get(`${API_URL}/api/reports`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await api.get("/api/reports");
 
       const allReports = Array.isArray(response.data)
         ? response.data

@@ -14,12 +14,11 @@ import {
   Printer,
   ChevronRight,
 } from "lucide-react";
-import axios from "axios";
+import api from "../config/api";
 import Navbar from "../components/ui/Navbar";
 import { useNavigate } from "react-router-dom";
 
 const UploadReportPage = () => {
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [summary, setSummary] = useState("");
@@ -44,12 +43,7 @@ const UploadReportPage = () => {
     const fetchCurrentUser = async () => {
       try {
         setLoadingUser(true);
-        const token = localStorage.getItem("pos-token");
-        if (!token) return;
-
-        const response = await axios.get(`${API_URL}/api/users/current`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await api.get("/api/users/current");
         setUser(response.data);
       } catch (err) {
         console.error("Failed to fetch user:", err);
@@ -59,7 +53,7 @@ const UploadReportPage = () => {
     };
 
     fetchCurrentUser();
-  }, [API_URL]);
+  }, []);
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -96,17 +90,8 @@ const UploadReportPage = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      const token = localStorage.getItem("pos-token");
-
-      if (!token) {
-        setError("Please login to save reports");
-        setLoading(false);
-        return;
-      }
-
-      const response = await axios.post(`${API_URL}/api/summarize`, formData, {
+      const response = await api.post("/api/summarize", formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
