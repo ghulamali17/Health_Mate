@@ -99,26 +99,39 @@ function AllVitals() {
     }
   };
 
-  const avgBP =
-    vitals.length > 0
-      ? Math.round(
-          vitals.reduce((acc, v) => acc + (v.bloodPressure?.systolic || 0), 0) /
-            vitals.length,
-        )
-      : 0;
-  const avgSugar =
-    vitals.length > 0
-      ? Math.round(
-          vitals.reduce((acc, v) => acc + (v.bloodSugar || 0), 0) /
-            vitals.length,
-        )
-      : 0;
-  const avgWeight =
-    vitals.length > 0
-      ? (
-          vitals.reduce((acc, v) => acc + (v.weight || 0), 0) / vitals.length
-        ).toFixed(1)
-      : 0;
+  const avgBP = React.useMemo(
+    () =>
+      vitals.length > 0
+        ? Math.round(
+            vitals.reduce(
+              (acc, v) => acc + (v.bloodPressure?.systolic || 0),
+              0,
+            ) / vitals.length,
+          )
+        : 0,
+    [vitals],
+  );
+
+  const avgSugar = React.useMemo(
+    () =>
+      vitals.length > 0
+        ? Math.round(
+            vitals.reduce((acc, v) => acc + (v.bloodSugar || 0), 0) /
+              vitals.length,
+          )
+        : 0,
+    [vitals],
+  );
+
+  const avgWeight = React.useMemo(
+    () =>
+      vitals.length > 0
+        ? (
+            vitals.reduce((acc, v) => acc + (v.weight || 0), 0) / vitals.length
+          ).toFixed(1)
+        : 0,
+    [vitals],
+  );
 
   const getPersonIcon = (vital) => {
     if (vital.forFamilyMember) {

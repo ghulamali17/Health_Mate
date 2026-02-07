@@ -263,7 +263,7 @@ const UploadReportPage = () => {
             )}
           </div>
 
-          {/* Results Area - Ultra Clean */}
+          {/* Results Area */}
           {summary && (
             <div className="animate-slideUp pt-6">
               <div className="bg-white rounded-[3rem] border border-slate-100 overflow-hidden shadow-sm">
