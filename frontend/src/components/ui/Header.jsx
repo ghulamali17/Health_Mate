@@ -110,44 +110,57 @@ const Header = ({ toggleSidebar }) => {
               <div ref={dropdownRef} className="relative">
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className="flex items-center gap-2 pl-2 pr-3 py-1.5 bg-white border border-slate-100 rounded-xl hover:border-primary/20 transition-all shadow-sm group"
+                  className="flex items-center gap-3 pl-1.5 pr-4 py-1.5 bg-white border border-slate-200/60 rounded-2xl hover:border-primary/40 hover:shadow-lg hover:shadow-slate-200/20 transition-all duration-300 group min-w-[125px]"
                 >
-                  <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center font-bold text-white text-xs">
-                    {user?.name?.charAt(0).toUpperCase()}
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-slate-900 rounded-[12px] flex items-center justify-center font-bold text-white text-[11px] shadow-sm ring-4 ring-transparent group-hover:ring-primary/5 transition-all duration-500">
+                      {user?.name?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-[13px] font-bold text-slate-800 tracking-tight group-hover:text-primary transition-colors">
+                      {user?.name?.split(" ")[0]}
+                    </span>
                   </div>
-                  <ChevronRight
-                    className={`w-4 h-4 text-slate-300 transition-transform ${isDropdownOpen ? "rotate-90" : ""}`}
-                  />
+                  <div className="flex-1 flex justify-end">
+                    <ChevronRight
+                      className={`w-3.5 h-3.5 text-slate-300 group-hover:text-primary transition-all duration-300 ${isDropdownOpen ? "rotate-90" : ""}`}
+                    />
+                  </div>
                 </button>
 
                 {isDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fadeIn">
-                    <div className="px-4 py-3 mb-1 border-b border-slate-50">
-                      <p className="text-sm font-bold text-slate-900 truncate">
+                  <div className="absolute right-0 mt-4 w-60 bg-white rounded-[2rem] shadow-2xl shadow-slate-200/50 border border-slate-100 p-2.5 z-50 animate-fadeIn origin-top-right">
+                    <div className="px-5 py-4 mb-2 bg-slate-50/50 rounded-[1.5rem] border border-slate-50">
+                      <p className="text-[13px] font-bold text-slate-900 truncate">
                         {user?.name}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                        Premium Account
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <div className="w-1 h-1 bg-primary rounded-full animate-pulse"></div>
+                        <p className="text-[9px] font-bold text-primary uppercase tracking-widest">
+                          Premium Access
+                        </p>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => handleNavigation("/profile")}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-primary rounded-lg transition-all"
-                    >
-                      <User className="w-4 h-4" /> Profile
-                    </button>
-                    <button
-                      onClick={() => handleNavigation("/dashboard")}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 hover:text-primary rounded-lg transition-all"
-                    >
-                      <LayoutDashboard className="w-4 h-4" /> Dashboard
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all border-t border-slate-50 mt-1"
-                    >
-                      <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => handleNavigation("/profile")}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-slate-100"
+                      >
+                        <User className="w-4 h-4 opacity-50" /> Profile
+                      </button>
+                      <button
+                        onClick={() => handleNavigation("/dashboard")}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-slate-500 hover:bg-white hover:text-primary hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-slate-100"
+                      >
+                        <LayoutDashboard className="w-4 h-4 opacity-50" />{" "}
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all mt-1"
+                      >
+                        <LogOut className="w-4 h-4 opacity-70" /> Sign Out
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
